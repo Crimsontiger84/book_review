@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>독서 후 글쓰기 — 북리뷰 & 독서 에세이 채널</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    }
+    .article-prose p {
+      margin-bottom: 1rem;
+      line-height: 1.85;
+      color: #1e293b;
+      font-size: 0.95rem;
+    }
+    .article-prose h3 {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #0f172a;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .article-prose blockquote {
+      border-left: 3px solid #6366f1;
+      padding-left: 0.875rem;
+      color: #475569;
+      font-style: italic;
+      margin: 0.875rem 0;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm shadow-indigo-200">
+          📚
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-lg font-extrabold tracking-tight text-slate-900" id="headerTitle">독서 후 글쓰기</h1>
+            <span
+              id="notionStatusBadge"
+              class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1.5"
+              title="Notion 원본 DB 보호를 위해 단방향 읽기 전용 수동 동기화로만 동작합니다"
+            >
+              <span id="notionBadgeDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span id="notionBadgeText">수동 동기화 모드 (읽기 전용 · 마지막 동기화: 2026-10-28 22:20)</span>
+            </span>
+          </div>
+          <p class="text-xs text-slate-500">북리뷰 & 독서 에세이 아카이브 • Notion [독서 후 글쓰기] 단방향(Notion ➔ Web) 읽기 전용 채널</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="syncFromNotion(true)" id="syncBtn" class="px-3.5 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition flex items-center gap-1.5" title="클릭 시에만 Notion 최신 데이터를 읽기 전용으로 불러옵니다">
+          <span>🔄</span>
+          <span>Notion 동기화</span>
+        </button>
+        <button onclick="openGoalModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center gap-1.5" title="목표 권수는 이 브라우저(localStorage)에만 저장됩니다">
+          <span>🎯</span>
+          <span>목표 수정</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Top Section: 2026 Goal Progress Hero & Summary Cards -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Annual Goal Progress Card -->
+      <div class="lg:col-span-7 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden flex flex-col justify-between">
+        <div class="absolute -right-12 -bottom-12 w-56 h-56 rounded-full bg-white/5 pointer-events-none"></div>
+        <div class="absolute right-12 -top-10 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+          <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-indigo-100 text-xs font-medium backdrop-blur-sm">
+              <span id="paceBadgeDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span id="paceStatusText">독서 후 글쓰기 북리뷰 채널 · 단방향 읽기 전용</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight" id="goalHeadline">
+              2026년 목표 60권 중 47권 완독!
+            </h2>
+            <p class="text-sm text-indigo-100/90 max-w-md" id="goalSubtext">
+              책을 읽고 사유한 기록을 남기는 공간입니다. 도서 카드를 눌러 줄거리와 독서 에세이, 브런치 서평을 읽어보세요.
+            </p>
+          </div>
+
+          <!-- Circular Progress Gauge -->
+          <div class="relative w-32 h-32 flex-shrink-0 mx-auto sm:mx-0">
+            <svg class="w-full h-full" viewBox="0 0 120 120">
+              <circle class="text-white/20" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" />
+              <circle id="goalRing" class="progress-ring__circle text-emerald-300" stroke-width="10" stroke-dasharray="314.16" stroke-dashoffset="314.16" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="goalPercentText" class="text-2xl font-extrabold">0%</span>
+              <span class="text-[11px] text-indigo-200">2026 달성률</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linear Progress & Milestones -->
+        <div class="mt-6 pt-5 border-t border-white/15 space-y-3 relative z-10">
+          <div class="flex justify-between text-xs font-medium text-indigo-100">
+            <span>2026년 독서 진행도 (<span id="completedCountLabel">0</span> / <span id="targetCountLabel">60</span>권)</span>
+            <span id="remainingCountLabel">목표까지 60권 남음</span>
+          </div>
+          <div class="w-full h-3 bg-black/25 rounded-full overflow-hidden p-0.5">
+            <div id="goalLinearBar" class="h-full bg-gradient-to-r from-emerald-300 to-teal-200 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-indigo-200 pt-1">
+            <span id="monthlyRecommendText">💡 연간 목표 기준 월평균 5.0권</span>
+            <button onclick="openGoalModal()" class="underline hover:text-white transition">올해 목표 권수 변경하기 (브라우저 저장) →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics 2x2 Grid -->
+      <div class="lg:col-span-5 grid grid-cols-2 gap-4">
+        <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">2026년 읽은 책</span>
+            <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">🔥</span>
+          </div>
+          <div class="mt-4">
+            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900"><span id="stat2026Count">0</span><span class="text-base font-semibold text-slate-400 ml-1">권</span></div>
+            <p class="text-xs text-slate-500 mt-1" id="stat2026Pace">월평균 집계 중</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">전체 누적 독서록</span>
+            <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">📚</span>
+          </div>
+          <div class="mt-4">
+            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900"><span id="statTotalCount">0</span><span class="text-base font-semibold text-slate-400 ml-1">권</span></div>
+            <p class="text-xs text-slate-500 mt-1" id="statTotalSub">2023~2026 전체 기록</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">연도별 독서 성장</span>
+            <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm">📈</span>
+          </div>
+          <div class="mt-4">
+            <div class="text-lg sm:text-xl font-extrabold text-slate-900" id="statYearlyGrowth">집계 중</div>
+            <p class="text-xs text-slate-500 mt-1" id="statYearlySub">2023 → 2024 → 2025 → 2026</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">최다 선호 책유형</span>
+            <span class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm">🏷️</span>
+          </div>
+          <div class="mt-4">
+            <div class="text-xl sm:text-2xl font-extrabold text-slate-900 truncate" id="statTopGenre">-</div>
+            <p class="text-xs text-slate-500 mt-1" id="statTopGenreSub">선호 분야 집계 중</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Middle Section: Analytics (Monthly Chart & Book Type Distribution) -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Monthly Reading Trend -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="monthlyChartTitle">📅 월별 독서 추이 (2026년)</h3>
+            <p class="text-xs text-slate-500">Notion [완료일] 기준 월별 독서량 분포</p>
+          </div>
+          <span id="bestMonthBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700">최다 독서월 계산 중</span>
+        </div>
+        <div id="monthlyChartContainer" class="grid grid-cols-12 gap-2 items-end h-36 pt-6 px-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Book Type Breakdown -->
+      <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900" id="genreChartTitle">📊 책유형별 분포 (TOP 6)</h3>
+              <p class="text-xs text-slate-500">Notion [책유형] 기준 비중</p>
+            </div>
+          </div>
+          <div id="genreListContainer" class="space-y-2.5">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <span id="insightTipText">💡 도서 카드를 클릭하면 줄거리와 독서 에세이 리더 뷰를 열람할 수 있습니다.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Section: Year Filter, View Mode Toggle, Review Filter, Search & Books -->
+    <section class="space-y-5">
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <!-- Year Filter Tabs -->
+        <div class="flex flex-wrap items-center gap-1.5" id="yearTabs">
+          <button onclick="setYearFilter('all')" data-year="all" class="year-btn px-3.5 py-2 rounded-xl text-xs font-bold transition bg-slate-900 text-white">
+            전체 연도 <span id="tabCountAll" class="ml-1 px-1.5 py-0.5 rounded-full bg-white/20 text-[11px]">0</span>
+          </button>
+          <button onclick="setYearFilter('2026')" data-year="2026" class="year-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:bg-slate-100">
+            2026년 <span id="tabCount2026" class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[11px]">0</span>
+          </button>
+          <button onclick="setYearFilter('2025')" data-year="2025" class="year-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:bg-slate-100">
+            2025년 <span id="tabCount2025" class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[11px]">0</span>
+          </button>
+          <button onclick="setYearFilter('2024')" data-year="2024" class="year-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:bg-slate-100">
+            2024년 <span id="tabCount2024" class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[11px]">0</span>
+          </button>
+          <button onclick="setYearFilter('2023')" data-year="2023" class="year-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:bg-slate-100">
+            2023년 <span id="tabCount2023" class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[11px]">0</span>
+          </button>
+        </div>
+
+        <!-- View Mode + Review Toggle + Search & Sort Controls -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Toggle: External Review / Essay Only -->
+          <button
+            id="reviewOnlyToggleBtn"
+            onclick="toggleReviewOnlyFilter()"
+            class="px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition flex items-center gap-1.5"
+            title="브런치/블로그 외부 서평 링크 또는 본문 에세이가 있는 책만 모아봅니다"
+          >
+            <span>✍️</span>
+            <span>서평/링크 있는 책만 보기</span>
+            <span id="reviewCountBadge" class="px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-extrabold">0</span>
+          </button>
+
+          <!-- View Toggle: Card vs Table -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-1">
+            <button id="viewBtnCard" onclick="setViewMode('card')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition">
+              🗂️ 카드 보기
+            </button>
+            <button id="viewBtnTable" onclick="setViewMode('table')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+              📋 DB 표 보기
+            </button>
+          </div>
+
+          <div class="relative flex-1 sm:w-52">
+            <input
+              id="searchInput"
+              type="text"
+              oninput="renderAll()"
+              placeholder="책이름, 저자, 줄거리, 책유형 검색..."
+              class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+          </div>
+
+          <select id="typeFilterSelect" onchange="renderAll()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="all">모든 책유형</option>
+          </select>
+
+          <select id="sortSelect" onchange="renderAll()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="date_desc">완료일 최신순</option>
+            <option value="date_asc">완료일 오래된순</option>
+            <option value="title">책이름 가나다순</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Book Cards Grid View -->
+      <div id="booksGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Notion DB Table View ([책이름 / 저자 / 완료일 / 연도 / 줄거리 / 책유형 / 외부 서평 / 열람]) -->
+      <div id="booksTableWrapper" class="hidden bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold text-slate-600 uppercase">
+                <th class="py-3.5 px-4">책이름</th>
+                <th class="py-3.5 px-4">저자</th>
+                <th class="py-3.5 px-4">완료일</th>
+                <th class="py-3.5 px-3">연도</th>
+                <th class="py-3.5 px-4">줄거리</th>
+                <th class="py-3.5 px-3">책유형</th>
+                <th class="py-3.5 px-3">서평 링크</th>
+                <th class="py-3.5 px-4 text-right">북리뷰 열람</th>
+              </tr>
+            </thead>
+            <tbody id="booksTableBody" class="divide-y divide-slate-100 text-xs">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300">
+        <div class="text-4xl mb-3">📭</div>
+        <h4 class="text-base font-bold text-slate-800">조건에 맞는 독서 기록이 없습니다</h4>
+        <p class="text-xs text-slate-500 mt-1 mb-5">다른 연도 탭을 선택하거나 서평 필터/검색어를 초기화해보세요.</p>
+        <button onclick="resetFilters()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition">
+          전체 도서 목록 다시 보기
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 border-t border-slate-200/80 mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+    <div id="footerSyncStatus">ReadLog • Notion [독서 후 글쓰기] 단방향 수동 동기화 모드 (Strict Read-Only)</div>
+    <div class="flex flex-wrap items-center gap-4">
+      <button onclick="syncFromNotion(true)" class="hover:text-indigo-600 underline font-semibold">🔄 지금 Notion 수동 동기화</button>
+      <button onclick="exportData()" class="hover:text-slate-600 underline">JSON 스냅샷 백업 내보내기</button>
+    </div>
+  </footer>
+
+  <!-- Modal: Book Review Article Reader (깔끔한 읽기 전용 북리뷰 리더 뷰) -->
+  <div id="essayModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4" onclick="if(event.target===this) closeEssayModal()">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col">
+      <!-- Reader Top Header -->
+      <div class="flex items-start justify-between gap-4 pb-5 border-b border-slate-100">
+        <div class="flex items-start gap-3.5">
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200/60 flex items-center justify-center text-3xl flex-shrink-0 select-none" id="essayModalEmoji">
+            📚
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="essayModalType" class="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700">책유형</span>
+              <span id="essayModalDate" class="text-xs font-medium text-slate-500">완료일</span>
+              <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">🔒 읽기 전용 아티클</span>
+            </div>
+            <h3 id="essayModalTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1 tracking-tight">책이름</h3>
+            <p id="essayModalAuthor" class="text-xs sm:text-sm font-medium text-slate-500 mt-0.5">저자</p>
+          </div>
+        </div>
+        <button onclick="closeEssayModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-sm transition flex-shrink-0" title="닫기 (ESC)">✕</button>
+      </div>
+
+      <!-- Reader Scrollable Body -->
+      <div class="flex-1 overflow-y-auto pr-1 py-5 space-y-5">
+        <!-- Summary Callout Box -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-indigo-50/70 to-slate-50 border border-indigo-100/80">
+          <div class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <span>📌</span>
+            <span>핵심 줄거리 & 한줄 요약</span>
+          </div>
+          <p id="essayModalSummary" class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed">-</p>
+        </div>
+
+        <!-- External Review Highlight Banner (Brunch / Blog / Docs) -->
+        <div id="essayModalExternalBanner" class="hidden p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="space-y-0.5">
+            <div class="text-xs font-extrabold text-emerald-900 flex items-center gap-1.5">
+              <span>🖋️</span>
+              <span id="essayModalExternalTitle">발행된 외부 서평 아티클이 있습니다</span>
+            </div>
+            <p class="text-xs text-emerald-700" id="essayModalExternalUrlText">브런치/블로그에서 전문과 이미지를 함께 읽을 수 있습니다.</p>
+          </div>
+          <a id="essayModalExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <span id="essayModalExternalBtnLabel">🖋️ 브런치/외부 서평 읽기 ↗</span>
+          </a>
+        </div>
+
+        <!-- Essay Article Viewer -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-extrabold text-slate-500 uppercase tracking-wider">📖 독서 후 글쓰기 (에세이 본문)</h4>
+            <a id="essayModalNotionLink" href="#" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-600 hover:underline font-semibold">Notion 원본 페이지 열기 ↗</a>
+          </div>
+          <div id="essayReaderContent" class="article-prose p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 min-h-[180px] text-slate-800 leading-relaxed">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Reader Footer: Prev / Next Book Navigation & Share -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100">
+        <div class="flex items-center gap-2">
+          <button type="button" id="prevBookBtn" onclick="navigateModalBook(-1)" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:pointer-events-none transition flex items-center gap-1">
+            <span>←</span>
+            <span>이전 책</span>
+          </button>
+          <span id="modalBookPosition" class="text-xs font-semibold text-slate-400 px-1">1 / 109</span>
+          <button type="button" id="nextBookBtn" onclick="navigateModalBook(1)" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:pointer-events-none transition flex items-center gap-1">
+            <span>다음 책</span>
+            <span>→</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="shareCurrentBook()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition">
+            🔗 서평 정보 복사
+          </button>
+          <button type="button" onclick="closeEssayModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Annual Goal (브라우저 localStorage 전용) -->
+  <div id="goalModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4" onclick="if(event.target===this) closeGoalModal()">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900">🎯 2026년 목표 도서 설정</h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">브라우저(localStorage)에만 저장되며 Notion DB는 수정하지 않습니다.</p>
+        </div>
+        <button onclick="closeGoalModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs">✕</button>
+      </div>
+      <form onsubmit="saveGoal(event)" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">2026년 완독 목표 권수 (권)</label>
+          <input id="goalTargetInput" type="number" min="1" max="365" required class="w-full px-4 py-2.5 text-base font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div class="grid grid-cols-4 gap-2">
+          <button type="button" onclick="document.getElementById('goalTargetInput').value=50" class="py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">50권</button>
+          <button type="button" onclick="document.getElementById('goalTargetInput').value=60" class="py-1.5 text-xs rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium">60권</button>
+          <button type="button" onclick="document.getElementById('goalTargetInput').value=80" class="py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">80권</button>
+          <button type="button" onclick="document.getElementById('goalTargetInput').value=100" class="py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">100권</button>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeGoalModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">취소</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700">적용하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-2xl bg-slate-900 text-white text-xs font-semibold shadow-xl items-center gap-2">
+    <span id="toastMessage">완료되었습니다.</span>
+  </div>
+
+  <script>
+    const STORAGE_KEY_BOOKS = 'readlog_notion_books_readonly_v4';
+    const STORAGE_KEY_GOAL = 'readlog_notion_goal_readonly_v4';
+    const STORAGE_KEY_SYNCED_AT = 'readlog_notion_synced_at_v4';
+    const LOCAL_BRIDGE_BASE = 'http://localhost:8000';
+
+    // Notion [독서 후 글쓰기] DB 초기 스냅샷 (서버 미접속/GitHub Pages 정적 배포 시에도 109권 전체 즉시 동작)
+    const INITIAL_NOTION_BOOKS = [{"id": "4045d750-ba6c-8099-9005-ce9021188280", "notionUrl": "https://app.notion.com/p/4045d750ba6c80999005ce9021188280", "emoji": "🧐", "title": "슈퍼노멀", "author": "주언규", "bookType": "자기계발", "summary": "신사임당 유튜버 주언규의 자기계발서", "completedDate": "2026-10-25", "year": "2026", "month": 10, "status": "completed", "externalUrl": "", "updatedAt": 1792906560000}, {"id": "3fa5d750-ba6c-80bc-83cf-feed475d2419", "notionUrl": "https://app.notion.com/p/3fa5d750ba6c80bc83cffeed475d2419", "emoji": "👴", "title": "테오", "author": "앨런 레비", "bookType": "소설", "summary": "테오라는 할아버지 이야기", "completedDate": "2026-10-13", "year": "2026", "month": 10, "status": "completed", "externalUrl": "", "updatedAt": 1792066380000}, {"id": "3f35d750-ba6c-80df-a71f-e1747aa72c57", "notionUrl": "https://app.notion.com/p/3f35d750ba6c80dfa71fe1747aa72c57", "emoji": "🤓", "title": "독서의 기술", "author": "고명환", "bookType": "에세이", "summary": "독서에 대한 에세이", "completedDate": "2026-10-08", "year": "2026", "month": 10, "status": "completed", "externalUrl": "", "updatedAt": 1791443760000}, {"id": "3ee5d750-ba6c-8026-8f01-d21868e6257b", "notionUrl": "https://app.notion.com/p/3ee5d750ba6c80268f01d21868e6257b", "emoji": "🐳", "title": "모비딕", "author": "허먼 멜빌", "bookType": "소설", "summary": "전설의 향유고래인 모비딕을 잡으러가는 이야기", "completedDate": "2026-10-03", "year": "2026", "month": 10, "status": "completed", "externalUrl": "", "updatedAt": 1791022380000}, {"id": "3dc5d750-ba6c-80bb-9186-f2ebe8138ccd", "notionUrl": "https://app.notion.com/p/3dc5d750ba6c80bb9186f2ebe8138ccd", "emoji": "🙄", "title": "니체 인생수업", "author": "프리드리히 니체 / 김지민", "bookType": "철학교양", "summary": "니체가 세상에 남긴 66가지 인생지혜", "completedDate": "2026-09-15", "year": "2026", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1789464120000}, {"id": "3db5d750-ba6c-808b-a393-fd105f72943f", "notionUrl": "https://app.notion.com/p/3db5d750ba6c808ba393fd105f72943f", "emoji": "😵‍💫", "title": "홍학의 자리", "author": "정해연", "bookType": "소설", "summary": "스릴러? 살인사건을 조사하는 과정에서 반전이 있음", "completedDate": "2026-09-13", "year": "2026", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1789436820000}, {"id": "3d55d750-ba6c-808f-a0e6-c4efd027f444", "notionUrl": "https://app.notion.com/p/6-3d55d750ba6c808fa0e6c4efd027f444", "emoji": "🏯", "title": "대망6", "author": "야마오카 소하치", "bookType": "소설", "summary": "혼모지의 변, 오다 노부가나의 몰락", "completedDate": "2026-09-07", "year": "2026", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1788857580000}, {"id": "3d15d750-ba6c-80aa-a83c-f842d7e22917", "notionUrl": "https://app.notion.com/p/3d15d750ba6c80aaa83cf842d7e22917", "emoji": "🤨", "title": "도둑맞은 집중력", "author": "요한 하리", "bookType": "심리교양", "summary": "집중력에 대한 이야기", "completedDate": "2026-09-04", "year": "2026", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1791442860000}, {"id": "3ce5d750-ba6c-80c5-9260-ec7235bc16aa", "notionUrl": "https://app.notion.com/p/3ce5d750ba6c80c59260ec7235bc16aa", "emoji": "🤔", "title": "질문의 격", "author": "유선경", "bookType": "인문교양", "summary": "답을 찾으려면 질문을 잘해야한다.", "completedDate": "2026-09-01", "year": "2026", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1788253620000}, {"id": "3cc5d750-ba6c-8079-b0e9-f196208736cf", "notionUrl": "https://app.notion.com/p/3cc5d750ba6c8079b0e9f196208736cf", "emoji": "🪁", "title": "연을 쫓는 아이", "author": "할레드 호세이니", "bookType": "소설", "summary": "아프가니스탄 출신 작가의 근대 아프가니스탄의 가슴 아픈 스토리", "completedDate": "2026-08-29", "year": "2026", "month": 8, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/114", "updatedAt": 1788252540000}, {"id": "3cc5d750-ba6c-808b-839d-f645486afb97", "notionUrl": "https://app.notion.com/p/3cc5d750ba6c808b839df645486afb97", "emoji": "🏛️", "title": "사기 인문학", "author": "사마천, 한정주", "bookType": "인문교양", "summary": "사기에 있는 사례를 교훈으로 풀어낸 인문학책", "completedDate": "2026-08-28", "year": "2026", "month": 8, "status": "completed", "externalUrl": "", "updatedAt": 1788243720000}, {"id": "3c65d750-ba6c-8047-a5f1-c8f3a2440894", "notionUrl": "https://app.notion.com/p/3c65d750ba6c8047a5f1c8f3a2440894", "emoji": "🤔", "title": "역사란 무엇인가", "author": "에드워드 핼릿 카", "bookType": "역사 교양", "summary": "역사에 대한 강연", "completedDate": "2026-08-24", "year": "2026", "month": 8, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/112", "updatedAt": 1788058020000}, {"id": "3c55d750-ba6c-80b2-90c6-e4930c660c35", "notionUrl": "https://app.notion.com/p/3c55d750ba6c80b290c6e4930c660c35", "emoji": "🤔", "title": "자유론", "author": "존 스튜어트 밀", "bookType": "철학교양", "summary": "19세기 자유에 대한 생각", "completedDate": "2026-08-23", "year": "2026", "month": 8, "status": "completed", "externalUrl": "", "updatedAt": 1787544120000}, {"id": "3c25d750-ba6c-8088-aeaf-ebf007819c4f", "notionUrl": "https://app.notion.com/p/3c25d750ba6c8088aeafebf007819c4f", "emoji": "🏛️", "title": "거꾸로 읽는 세계사", "author": "유시민", "bookType": "역사 교양", "summary": "20세기의 가장 큰 사건 10개를 다룬 책", "completedDate": "2026-08-20", "year": "2026", "month": 8, "status": "completed", "externalUrl": "", "updatedAt": 1787544060000}, {"id": "3b55d750-ba6c-80e1-a9c1-d853539f0cd6", "notionUrl": "https://app.notion.com/p/3b55d750ba6c80e1a9c1d853539f0cd6", "emoji": "🙄", "title": "모순", "author": "양귀자", "bookType": "소설", "summary": "쌍둥이 엄마와 이모의 모순적인 이야기", "completedDate": "2026-07-31", "year": "2026", "month": 7, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/111", "updatedAt": 1787545380000}, {"id": "3ac5d750-ba6c-80b4-9386-e865be9e2eee", "notionUrl": "https://app.notion.com/p/3ac5d750ba6c80b49386e865be9e2eee", "emoji": "🙂", "title": "글쓰기 특강", "author": "유시민", "bookType": "글쓰기 교양", "summary": "글쓰기 방법", "completedDate": "2026-07-26", "year": "2026", "month": 7, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/110", "updatedAt": 1786069080000}, {"id": "39e5d750-ba6c-80d5-9665-f81d49620028", "notionUrl": "https://app.notion.com/p/AI-39e5d750ba6c80d59665f81d49620028", "emoji": "🙈", "title": "AI, 신의 탄생 인간의 종말", "author": "엘리에저 유드코스키, 네이트 소아레스", "bookType": "과학교양", "summary": "초지능에 대한 디스토피아 이야기", "completedDate": "2026-07-15", "year": "2026", "month": 7, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/109", "updatedAt": 1786069140000}, {"id": "3915d750-ba6c-8029-89d7-ca986899bcb6", "notionUrl": "https://app.notion.com/p/Tribes-3915d750ba6c802989d7ca986899bcb6", "emoji": "😃", "title": "Tribes 트라이브스", "author": "세스고딘", "bookType": "교양", "summary": "리더십에 대하여", "completedDate": "2026-07-02", "year": "2026", "month": 7, "status": "completed", "externalUrl": "", "updatedAt": 1782998760000}, {"id": "3845d750-ba6c-8040-befd-cbe8a2ef2e0d", "notionUrl": "https://app.notion.com/p/3845d750ba6c8040befdcbe8a2ef2e0d", "emoji": "😉", "title": "무례한 세상에서 나를 지키는 법", "author": "발타자르 그라시안", "bookType": "인문", "summary": "좋은 글", "completedDate": "2026-06-19", "year": "2026", "month": 6, "status": "completed", "externalUrl": "", "updatedAt": 1782279120000}, {"id": "3805d750-ba6c-8048-a4c8-e0bb429c191a", "notionUrl": "https://app.notion.com/p/Power-3805d750ba6c8048a4c8e0bb429c191a", "emoji": "🦸‍♂️", "title": "Power", "author": "제프리페퍼", "bookType": "인문", "summary": "권력에 대해서", "completedDate": "2026-06-14", "year": "2026", "month": 6, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/107", "updatedAt": 1786069140000}, {"id": "3795d750-ba6c-8070-b850-cd04967e4f7e", "notionUrl": "https://app.notion.com/p/3795d750ba6c8070b850cd04967e4f7e", "emoji": "🚀", "title": "팔란티어 시대가 온다.", "author": "변우철", "bookType": "교양", "summary": "팔란티어와 협업한 과정. 팔란티어의 장점을 소개", "completedDate": "2026-06-08", "year": "2026", "month": 6, "status": "completed", "externalUrl": "", "updatedAt": 1780883940000}, {"id": "3745d750-ba6c-804f-948d-e077360781a3", "notionUrl": "https://app.notion.com/p/5-3745d750ba6c804f948de077360781a3", "emoji": "🏯", "title": "대망5", "author": "야마오카 소하치", "bookType": "소설", "summary": "나가시노 전투", "completedDate": "2026-06-03", "year": "2026", "month": 6, "status": "completed", "externalUrl": "", "updatedAt": 1780540260000}, {"id": "3725d750-ba6c-80c9-8235-f52d9a6332f1", "notionUrl": "https://app.notion.com/p/7-3725d750ba6c80c98235f52d9a6332f1", "emoji": "👍", "title": "권력을 경영하는 7가지 원칙", "author": "제프리 페퍼", "bookType": "교양", "summary": "권력의 필요성과 활용하는 방법", "completedDate": "2026-05-31", "year": "2026", "month": 5, "status": "completed", "externalUrl": "", "updatedAt": 1780277700000}, {"id": "3645d750-ba6c-80a0-a58a-e6c646290fcc", "notionUrl": "https://app.notion.com/p/What-man-live-by-3645d750ba6c80a0a58ae6c646290fcc", "emoji": "😇", "title": "What man live by", "author": "톨스토이", "bookType": "소설", "summary": "단편집", "completedDate": "2026-05-18", "year": "2026", "month": 5, "status": "completed", "externalUrl": "", "updatedAt": 1779079500000}, {"id": "3645d750-ba6c-8065-b18b-c4b43aed4a44", "notionUrl": "https://app.notion.com/p/3645d750ba6c8065b18bc4b43aed4a44", "emoji": "🏰", "title": "최소한의 삼국지", "author": "최태성", "bookType": "역사교양", "summary": "삼국지 이야기", "completedDate": "2026-05-15", "year": "2026", "month": 5, "status": "completed", "externalUrl": "", "updatedAt": 1779083400000}, {"id": "35d5d750-ba6c-8082-970c-c2ebd91d11b4", "notionUrl": "https://app.notion.com/p/AI-35d5d750ba6c8082970cc2ebd91d11b4", "emoji": "🙄", "title": "샘올트먼 AI제국의 설계자", "author": "저우헝싱", "bookType": "교양", "summary": "샘올트먼의 일대기와 Open AI 설립 이야기", "completedDate": "2026-05-11", "year": "2026", "month": 5, "status": "completed", "externalUrl": "", "updatedAt": 1780882920000}, {"id": "35d5d750-ba6c-8033-816d-d84f7b520e77", "notionUrl": "https://app.notion.com/p/35d5d750ba6c8033816dd84f7b520e77", "emoji": "💀", "title": "다크심리학", "author": "다크사이드 프로젝트", "bookType": "심리학 교양", "summary": "어둠의 심리에 대처하는 방법", "completedDate": "2026-05-11", "year": "2026", "month": 5, "status": "completed", "externalUrl": "", "updatedAt": 1778832240000}, {"id": "35b5d750-ba6c-8083-8c2a-f241aab35f00", "notionUrl": "https://app.notion.com/p/4-35b5d750ba6c80838c2af241aab35f00", "emoji": "🏯", "title": "대망4", "author": "야마오카 소하치", "bookType": "소설", "summary": "다케다 신겐과의 전투", "completedDate": "2026-05-08", "year": "2026", "month": 5, "status": "completed", "externalUrl": "", "updatedAt": 1778325720000}, {"id": "3385d750-ba6c-80fc-8aef-de975a6520bd", "notionUrl": "https://app.notion.com/p/3-3385d750ba6c80fc8aefde975a6520bd", "emoji": "🏯", "title": "대망3", "author": "야마오카 소하치", "bookType": "소설", "summary": "도쿠카와 이에야스 일대기", "completedDate": "2026-04-03", "year": "2026", "month": 4, "status": "completed", "externalUrl": "", "updatedAt": 1778325720000}, {"id": "3305d750-ba6c-80f9-a436-e70966810b44", "notionUrl": "https://app.notion.com/p/GPT-3305d750ba6c80f9a436e70966810b44", "emoji": "🖥️", "title": "비전공자도 이해할 수 있는 챗GPT", "author": "박상길", "bookType": "과학 교양", "summary": "LLM 모델과 반도체에 대한 모든것", "completedDate": "2026-03-27", "year": "2026", "month": 3, "status": "completed", "externalUrl": "", "updatedAt": 1774600020000}, {"id": "3305d750-ba6c-8069-a73f-c0ce9f091b81", "notionUrl": "https://app.notion.com/p/3305d750ba6c8069a73fc0ce9f091b81", "emoji": "🤔", "title": "혼모노", "author": "성해나", "bookType": "단편소설집", "summary": "시대갈등의 몇가지 이야기", "completedDate": "2026-03-27", "year": "2026", "month": 3, "status": "completed", "externalUrl": "", "updatedAt": 1774600080000}, {"id": "32d5d750-ba6c-8054-a2e0-c5f06f5dfbc3", "notionUrl": "https://app.notion.com/p/32d5d750ba6c8054a2e0c5f06f5dfbc3", "emoji": "🤓", "title": "노동의 시대는 끝났다.", "author": "대니얼 서스킨드", "bookType": "기술교양", "summary": "기술 발전에 의해 노동에 대한 재해석", "completedDate": "2026-03-24", "year": "2026", "month": 3, "status": "completed", "externalUrl": "", "updatedAt": 1774579260000}, {"id": "3185d750-ba6c-8075-b6a7-fe1d840ad7f3", "notionUrl": "https://app.notion.com/p/Nexus-3185d750ba6c8075b6a7fe1d840ad7f3", "emoji": "🤔", "title": "Nexus(넥서스)", "author": "유발 하라리", "bookType": "역사교양", "summary": "정보관점에서 본 인간의 역사", "completedDate": "2026-03-03", "year": "2026", "month": 3, "status": "completed", "externalUrl": "", "updatedAt": 1772541900000}, {"id": "3135d750-ba6c-805b-8dbc-eefc2314611a", "notionUrl": "https://app.notion.com/p/3135d750ba6c805b8dbceefc2314611a", "emoji": "🤔", "title": "고전이 답했다.  마땅이 살아야할 삶에 대하여", "author": "고명환", "bookType": "에세이", "summary": "고전에 대한 이야기", "completedDate": "2026-02-26", "year": "2026", "month": 2, "status": "completed", "externalUrl": "", "updatedAt": 1772098320000}, {"id": "3105d750-ba6c-806e-ba23-c64cf484cd35", "notionUrl": "https://app.notion.com/p/3105d750ba6c806eba23c64cf484cd35", "emoji": "🤔", "title": "노인과 바다", "author": "어니스트 헤밍웨이", "bookType": "소설", "summary": "노인이 바다에서 큰물고기를 잡는 사투를 그린 이야기", "completedDate": "2026-02-23", "year": "2026", "month": 2, "status": "completed", "externalUrl": "", "updatedAt": 1771827840000}, {"id": "3115d750-ba6c-801c-8cf6-f0b1324b0f01", "notionUrl": "https://app.notion.com/p/3115d750ba6c801c8cf6f0b1324b0f01", "emoji": "😆", "title": "당신은 반드시 부자가 될 것이다", "author": "나폴레온 힐", "bookType": "자기계발", "summary": "부자가 되는 52가지", "completedDate": "2026-02-22", "year": "2026", "month": 2, "status": "completed", "externalUrl": "", "updatedAt": 1791439080000}, {"id": "3075d750-ba6c-80aa-b4ca-c937d82525ef", "notionUrl": "https://app.notion.com/p/3075d750ba6c80aab4cac937d82525ef", "emoji": "😱", "title": "변신", "author": "프란츠 카프카", "bookType": "소설", "summary": "하루밤에 벌레로 변한 사람 이야기", "completedDate": "2026-02-14", "year": "2026", "month": 2, "status": "completed", "externalUrl": "", "updatedAt": 1772587140000}, {"id": "3075d750-ba6c-80db-b654-fec38f0c9922", "notionUrl": "https://app.notion.com/p/3075d750ba6c80dbb654fec38f0c9922", "emoji": "🤔", "title": "다산의 설계도", "author": "김경수", "bookType": "자기계발", "summary": "다산의 정신을 정리", "completedDate": "2026-02-14", "year": "2026", "month": 2, "status": "completed", "externalUrl": "", "updatedAt": 1771037220000}, {"id": "3035d750-ba6c-8056-bf83-dd7349bbfac0", "notionUrl": "https://app.notion.com/p/3035d750ba6c8056bf83dd7349bbfac0", "emoji": "📘", "title": "고전이 답했다. 마땅히 가져야 할 부에 대하여", "author": "고명환", "bookType": "에세이", "summary": "고전의 이야기로 부를 축척한 고명환 작가의 에세이", "completedDate": "2026-02-08", "year": "2026", "month": 2, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/89", "updatedAt": 1774579200000}, {"id": "2fe5d750-ba6c-8063-b985-c12f3a78a707", "notionUrl": "https://app.notion.com/p/2fe5d750ba6c8063b985c12f3a78a707", "emoji": "🤵‍♂️", "title": "몸값 높이기의 기술", "author": "존 에이커프", "bookType": "자기계발", "summary": "몸값을 올리는 25가지 기술", "completedDate": "2026-02-05", "year": "2026", "month": 2, "status": "completed", "externalUrl": "", "updatedAt": 1770274140000}, {"id": "2fb5d750-ba6c-80d4-a5de-fd572eb1c550", "notionUrl": "https://app.notion.com/p/Unstoppable-Us-volum-1-2fb5d750ba6c80d4a5defd572eb1c550", "emoji": "🤓", "title": "Unstoppable Us volum 1", "author": "Yuval Harari", "bookType": "과학교양", "summary": "인류가 어떻게 세계를 지배하게 됐는지 역사적 사실을 설명", "completedDate": "2026-02-01", "year": "2026", "month": 2, "status": "completed", "externalUrl": "", "updatedAt": 1791439020000}, {"id": "2f45d750-ba6c-80e6-8add-deb8bfccd6c4", "notionUrl": "https://app.notion.com/p/AI-2f45d750ba6c80e68adddeb8bfccd6c4", "emoji": "😴", "title": "AI전략수업", "author": "김동석", "bookType": "사용설명서", "summary": "AI툴 사용 설명서", "completedDate": "2026-01-26", "year": "2026", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1769418120000}, {"id": "2f05d750-ba6c-80a8-be0d-e31d4e611d0a", "notionUrl": "https://app.notion.com/p/2f05d750ba6c80a8be0de31d4e611d0a", "emoji": "😌", "title": "당신이 잘살고 있다는 착각", "author": "박진우", "bookType": "자기계발", "summary": "심리학, 과학적으로 자기계발에 대한 분석", "completedDate": "2026-01-21", "year": "2026", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1770274200000}, {"id": "2e25d750-ba6c-80eb-8a74-f08d4638f2c9", "notionUrl": "https://app.notion.com/p/MBA-2e25d750ba6c80eb8a74f08d4638f2c9", "emoji": "👨‍💼", "title": "퍼스널MBA", "author": "Josh Kaufman", "bookType": "경영", "summary": "비지니스에 대한 모든 것", "completedDate": "2026-01-08", "year": "2026", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1768178940000}, {"id": "2e05d750-ba6c-809e-bce5-e7a3231e0317", "notionUrl": "https://app.notion.com/p/50-2e05d750ba6c809ebce5e7a3231e0317", "emoji": "📘", "title": "세계사를 바꾼 50권의 책", "author": "대니얼 스미스", "bookType": "교양", "summary": "작가가 인류사에 가장 중요한 전환점을 줬다고 생각한 50권의 책 소개", "completedDate": "2026-01-06", "year": "2026", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1767693360000}, {"id": "2e05d750-ba6c-8095-b28a-c970aa1eb6c1", "notionUrl": "https://app.notion.com/p/2e05d750ba6c8095b28ac970aa1eb6c1", "emoji": "🧪", "title": "양자 물리학이 뭔가요?", "author": "리사 하비 스미스", "bookType": "과학교양", "summary": "양자 물리학에 대한 대략적인 이야기", "completedDate": "2026-01-05", "year": "2026", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1767693360000}, {"id": "2e05d750-ba6c-8036-b8e6-d8e864368f89", "notionUrl": "https://app.notion.com/p/2e05d750ba6c8036b8e6d8e864368f89", "emoji": "😮‍💨", "title": "부자 아빠, 가난한 아빠", "author": "로버트 기요사키", "bookType": "자기계발", "summary": "부자가 되는 방법에 대해서", "completedDate": "2026-01-04", "year": "2026", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1767693360000}, {"id": "2d85d750-ba6c-80dc-a659-fb6ef42e9471", "notionUrl": "https://app.notion.com/p/2d85d750ba6c80dca659fb6ef42e9471", "emoji": "🤔", "title": "의미의 시대", "author": "세스고딘", "bookType": "자기계발", "summary": "일과 일터에서 의미를 찾아야 하는 시대가 왔다.", "completedDate": "2025-12-29", "year": "2025", "month": 12, "status": "completed", "externalUrl": "", "updatedAt": 1766990160000}, {"id": "2d75d750-ba6c-8062-b774-fa1fde7e5dc7", "notionUrl": "https://app.notion.com/p/100-2d75d750ba6c8062b774fa1fde7e5dc7", "emoji": "🧠", "title": "100%뇌 활용법", "author": "요시 할라미시", "bookType": "과학 교양", "summary": "뇌에 대한 여러가지 일상생활 상식", "completedDate": "2025-12-28", "year": "2025", "month": 12, "status": "completed", "externalUrl": "", "updatedAt": 1766924400000}, {"id": "2d15d750-ba6c-808a-95d9-e5be71833759", "notionUrl": "https://app.notion.com/p/2d15d750ba6c808a95d9e5be71833759", "emoji": "🥰", "title": "한복 입은 남자", "author": "이상훈", "bookType": "소설", "summary": "장영실이 이탈리아에 갔을 수도 있다", "completedDate": "2025-12-22", "year": "2025", "month": 12, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/75", "updatedAt": 1766972940000}, {"id": "2cb5d750-ba6c-80f3-b558-e921cc301d72", "notionUrl": "https://app.notion.com/p/V2-0-2cb5d750ba6c80f3b558e921cc301d72", "emoji": "📚", "title": "세이노의 가르침 V2.0", "author": "세이노", "bookType": "자기계발", "summary": "", "completedDate": "2025-12-16", "year": "2025", "month": 12, "status": "completed", "externalUrl": "", "updatedAt": 1766385240000}, {"id": "2cb5d750-ba6c-800f-9946-c45f4a75740a", "notionUrl": "https://app.notion.com/p/AI-2cb5d750ba6c800f9946c45f4a75740a", "emoji": "🖥️", "title": "AI트랜스포메이션", "author": "케이트리", "bookType": "교양", "summary": "AI로 트랜스포메이션을 해야 성공할 수 있고, 살아남을 수 있다.", "completedDate": "2025-12-15", "year": "2025", "month": 12, "status": "completed", "externalUrl": "", "updatedAt": 1769051460000}, {"id": "2c05d750-ba6c-802d-8602-db2a61e4ca06", "notionUrl": "https://app.notion.com/p/2c05d750ba6c802d8602db2a61e4ca06", "emoji": "🤖", "title": "듀얼 브레인", "author": "이선 몰릭", "bookType": "과학교양", "summary": "일상생활과 업무환경에서 AI를 대하는 자세와 미래예측", "completedDate": "2025-12-05", "year": "2025", "month": 12, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/74", "updatedAt": 1765261800000}, {"id": "2bc5d750-ba6c-8043-9edf-e02ba0e441f4", "notionUrl": "https://app.notion.com/p/2bc5d750ba6c80439edfe02ba0e441f4", "emoji": "🍗", "title": "인생에 한번은 독기를 품어라", "author": "권민창", "bookType": "자기계발", "summary": "열심히 하면 된다.", "completedDate": "2025-11-30", "year": "2025", "month": 11, "status": "completed", "externalUrl": "", "updatedAt": 1764569940000}, {"id": "2b45d750-ba6c-80df-a1e7-fff2cc74e549", "notionUrl": "https://app.notion.com/p/2026-2b45d750ba6c80dfa1e7fff2cc74e549", "emoji": "🤐", "title": "트렌드코리아 2026", "author": "김난도", "bookType": "교양", "summary": "트렌드 예측", "completedDate": "2025-11-23", "year": "2025", "month": 11, "status": "completed", "externalUrl": "", "updatedAt": 1763951400000}, {"id": "2b45d750-ba6c-809b-9a83-c2692076903b", "notionUrl": "https://app.notion.com/p/2b45d750ba6c809b9a83c2692076903b", "emoji": "🫢", "title": "사탄탱고", "author": "크러스너호르커이 라슬로", "bookType": "소설", "summary": "암울한 미래의 묵시록", "completedDate": "2025-11-22", "year": "2025", "month": 11, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/71", "updatedAt": 1764163980000}, {"id": "2a85d750-ba6c-80d4-8dd9-fa5175aa04d0", "notionUrl": "https://app.notion.com/p/2a85d750ba6c80d48dd9fa5175aa04d0", "emoji": "🖥️", "title": "데이터의 함정", "author": "앤디 맥밀런, 자넬 에스테스", "bookType": "데이터", "summary": "고객과 소통하여 올바른 데이터를 확보하고 해석하는 사례 분석", "completedDate": "2025-11-11", "year": "2025", "month": 11, "status": "completed", "externalUrl": "", "updatedAt": 1762851900000}, {"id": "2a85d750-ba6c-805f-b429-fe1380f40d3c", "notionUrl": "https://app.notion.com/p/2a85d750ba6c805fb429fe1380f40d3c", "emoji": "🍷", "title": "와인인문학: 이탈리아", "author": "배영달", "bookType": "교양", "summary": "이탈리아 와인 스토리", "completedDate": "2025-11-09", "year": "2025", "month": 11, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/70", "updatedAt": 1764911640000}, {"id": "2a05d750-ba6c-809a-8492-eefbe9ccfde4", "notionUrl": "https://app.notion.com/p/2a05d750ba6c809a8492eefbe9ccfde4", "emoji": "🙀", "title": "빅터 프랭클린의 죽음의 수용소에서", "author": "빅터 프랭클린", "bookType": "철학", "summary": "정신과 의사가 나치시대에 죽음의 수용소에서 겪은 일을 나열하고, 정신적인 부분은 객관화 한 내용", "completedDate": "2025-11-01", "year": "2025", "month": 11, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/69", "updatedAt": 1762772640000}, {"id": "29b5d750-ba6c-8038-8b53-cbb49242b8ed", "notionUrl": "https://app.notion.com/p/AGI-29b5d750ba6c80388b53cbb49242b8ed", "emoji": "🤖", "title": "AGI 천사인가 악마인가", "author": "김대식", "bookType": "과학 교양", "summary": "AGI에 대한 기본 내용과 유토피아와 디스포피아를 상상한 이야기", "completedDate": "2025-10-28", "year": "2025", "month": 10, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/68", "updatedAt": 1761811680000}, {"id": "2925d750-ba6c-8067-a045-ef1f15f2a3bc", "notionUrl": "https://app.notion.com/p/2925d750ba6c8067a045ef1f15f2a3bc", "emoji": "🤔", "title": "피터드러커 매니지먼트", "author": "피터드러커", "bookType": "경영", "summary": "매니지먼트의 교과서", "completedDate": "2025-10-20", "year": "2025", "month": 10, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/65", "updatedAt": 1762908300000}, {"id": "28d5d750-ba6c-8022-b4e0-c122f56a763f", "notionUrl": "https://app.notion.com/p/28d5d750ba6c8022b4e0c122f56a763f", "emoji": "😖", "title": "화를 내며 살기엔 인생이 너무 짧다", "author": "이진우", "bookType": "철학", "summary": "스토아 학파의 세네카의 철학적인 정신을 공부하는 내용", "completedDate": "2025-10-10", "year": "2025", "month": 10, "status": "completed", "externalUrl": "", "updatedAt": 1760511000000}, {"id": "27d5d750-ba6c-80af-bfc1-fc4adb95acd5", "notionUrl": "https://app.notion.com/p/27d5d750ba6c80afbfc1fc4adb95acd5", "emoji": "🫥", "title": "하버드 집중력 혁명", "author": "미상", "bookType": "철학", "summary": "집중력에 대한 내용, 성인ADHD에 대한 정보와 개선하는 방법 등", "completedDate": "2025-09-28", "year": "2025", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1762152780000}, {"id": "2785d750-ba6c-80ea-9dd5-d49e3a6128e8", "notionUrl": "https://app.notion.com/p/2785d750ba6c80ea9dd5d49e3a6128e8", "emoji": "😜", "title": "호빗", "author": "톨킨", "bookType": "소설", "summary": "호빗 빌보가 난장이 왕인 소린과 그의 친구들과 함께 용을 무찌르는 이야기", "completedDate": "2025-09-22", "year": "2025", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1760966880000}, {"id": "26f5d750-ba6c-80a9-9e27-eda8c4c41cee", "notionUrl": "https://app.notion.com/p/26f5d750ba6c80a99e27eda8c4c41cee", "emoji": "😴", "title": "컨버티드:마음을 훔치는 데이터분석의 기술", "author": "닐 호인", "bookType": "필수교양", "summary": "고객의 소리를 듣기 위한 데이터 분석 방법", "completedDate": "2025-09-15", "year": "2025", "month": 9, "status": "completed", "externalUrl": "", "updatedAt": 1760966940000}, {"id": "2565d750-ba6c-8081-b23b-c72cf0c5bcb3", "notionUrl": "https://app.notion.com/p/2565d750ba6c8081b23bc72cf0c5bcb3", "emoji": "🕵️", "title": "어떻게 경영할것인가?", "author": "후지타 가쓰토시", "bookType": "경영", "summary": "피터드러커의 정신으로 꼭해야할 7가지 관점 정리", "completedDate": "2025-08-21", "year": "2025", "month": 8, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/56", "updatedAt": 1756858080000}, {"id": "2415d750-ba6c-80bd-b52a-f44f0244650c", "notionUrl": "https://app.notion.com/p/2415d750ba6c80bdb52af44f0244650c", "emoji": "😆", "title": "남이야 뭐라 하건", "author": "리처드 파인만", "bookType": "에세이", "summary": "리처드 파인만의 에세이", "completedDate": "2025-07-28", "year": "2025", "month": 7, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425", "updatedAt": 1762152840000}, {"id": "22b5d750-ba6c-80b2-8f75-e1066cd6a56d", "notionUrl": "https://app.notion.com/p/22b5d750ba6c80b28f75e1066cd6a56d", "emoji": "🙉", "title": "퀀텀의 세계", "author": "이순칠", "bookType": "과학교향", "summary": "양자 기초 원리 설명과 양자 컴퓨터의 미래 사용 가능성 설명", "completedDate": "2025-07-08", "year": "2025", "month": 7, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/52", "updatedAt": 1754004240000}, {"id": "2245d750-ba6c-8072-bcd7-f48b3538e3d0", "notionUrl": "https://app.notion.com/p/STONER-2245d750ba6c8072bcd7f48b3538e3d0", "emoji": "🤵‍♂️", "title": "STONER", "author": "존 윌리엄스", "bookType": "소설", "summary": "윌리엄 스토너라는 남자의 담담한 인생 이야기", "completedDate": "2025-07-01", "year": "2025", "month": 7, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/50", "updatedAt": 1765180860000}, {"id": "2115d750-ba6c-8034-a1d7-e6bcb50c498f", "notionUrl": "https://app.notion.com/p/2115d750ba6c8034a1d7e6bcb50c498f", "emoji": "⚛️", "title": "데이터 사이언스 입문", "author": "김진/최정아", "bookType": "교양", "summary": "데이터 분석에 전반적인 설명과 이론서", "completedDate": "2025-06-13", "year": "2025", "month": 6, "status": "completed", "externalUrl": "", "updatedAt": 1765180860000}, {"id": "20d5d750-ba6c-8055-b58d-c02eb373806b", "notionUrl": "https://app.notion.com/p/20d5d750ba6c8055b58dc02eb373806b", "emoji": "🗓️", "title": "행동하지 않으면 인생은 바뀌지 않는다.", "author": "브라이언 트레이시", "bookType": "자기계발", "summary": "성공을 위한 실천의 중요성에 대해서 강조", "completedDate": "2025-06-02", "year": "2025", "month": 6, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/46", "updatedAt": 1765180860000}, {"id": "20d5d750-ba6c-80ae-8630-c0b58a093555", "notionUrl": "https://app.notion.com/p/20d5d750ba6c80ae8630c0b58a093555", "emoji": "🙊", "title": "종의 기원", "author": "찰스 다윈", "bookType": "과학교양", "summary": "진화론", "completedDate": "2025-05-22", "year": "2025", "month": 5, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/44", "updatedAt": 1765180800000}, {"id": "1f55d750-ba6c-8071-91da-c8c93a1ea49a", "notionUrl": "https://app.notion.com/p/1f55d750ba6c807191dac8c93a1ea49a", "emoji": "📚", "title": "데이터 과학", "author": "존 컬러허/브렌던 티어니", "bookType": "교양", "summary": "의사결정을 위한 데이터 과학의 오해와 진실", "completedDate": "2025-05-13", "year": "2025", "month": 5, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/43", "updatedAt": 1765180800000}, {"id": "1a65d750-ba6c-80f6-bf48-d4788e4b4657", "notionUrl": "https://app.notion.com/p/1a65d750ba6c80f6bf48d4788e4b4657", "emoji": "📚", "title": "린치핀", "author": "세스 고딘", "bookType": "자기계발", "summary": "톱니바퀴같은 사람이 되지 말고, 린치핀같은 중요한 사람이 되어라", "completedDate": "2025-02-26", "year": "2025", "month": 2, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/38", "updatedAt": 1765180740000}, {"id": "1a45d750-ba6c-8058-8fb6-deb7f222b01f", "notionUrl": "https://app.notion.com/p/1a45d750ba6c80588fb6deb7f222b01f", "emoji": "🐗", "title": "동물농장", "author": "조지오웰", "bookType": "소설", "summary": "러시아 혁명 및 스탈린 독재정권을 동물로 풍자", "completedDate": "2025-02-23", "year": "2025", "month": 2, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/36", "updatedAt": 1765180680000}, {"id": "1905d750-ba6c-804f-a462-faa4e843a374", "notionUrl": "https://app.notion.com/p/1984-1905d750ba6c804fa462faa4e843a374", "emoji": "🔦", "title": "1984", "author": "조지 오웰", "bookType": "소설", "summary": "독재정권에서 감시를 받으며 살아가는 인간의 이야기", "completedDate": "2025-02-04", "year": "2025", "month": 2, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/32", "updatedAt": 1765180680000}, {"id": "1795d750-ba6c-804b-9613-ccfd69ddc8b6", "notionUrl": "https://app.notion.com/p/1795d750ba6c804b9613ccfd69ddc8b6", "emoji": "🔫", "title": "총균쇠", "author": "제러드 다이아몬드", "bookType": "교양", "summary": "인류의 발전과 역사에 대해서 지리적인 부분으로 설명", "completedDate": "2025-01-12", "year": "2025", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1765180620000}, {"id": "15f5d750-ba6c-8082-a782-da5fb1e96e0b", "notionUrl": "https://app.notion.com/p/15f5d750ba6c8082a782da5fb1e96e0b", "emoji": "📚", "title": "퓨처셀프", "author": "벤자민 하디", "bookType": "자기계발", "summary": "미래의 나에게 투자해라", "completedDate": "2024-12-17", "year": "2024", "month": 12, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/28", "updatedAt": 1752223380000}, {"id": "15a5d750-ba6c-8085-9c83-c344bc7ad469", "notionUrl": "https://app.notion.com/p/15a5d750ba6c80859c83c344bc7ad469", "emoji": "📚", "title": "만약 고교야구 여자매니저가 피터드러커를 읽는다면", "author": "이와사키 나쓰미", "bookType": "소설", "summary": "피터드러커의 매니지먼트 책을 읽고 실력없는 야구부를 고시엔대회에 참여시키는 내용", "completedDate": "2024-12-12", "year": "2024", "month": 12, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/27", "updatedAt": 1752223380000}, {"id": "1545d750-ba6c-806f-8468-d43f1e6d7f4c", "notionUrl": "https://app.notion.com/p/1545d750ba6c806f8468d43f1e6d7f4c", "emoji": "📚", "title": "데미안", "author": "헤르만 헤세", "bookType": "소설", "summary": "자기가 성장해가는 과정을 표현", "completedDate": "2024-12-06", "year": "2024", "month": 12, "status": "completed", "externalUrl": "", "updatedAt": 1752223380000}, {"id": "1505d750-ba6c-8096-b8a2-ee0d20c2f337", "notionUrl": "https://app.notion.com/p/2025-1505d750ba6c8096b8a2ee0d20c2f337", "emoji": "📚", "title": "트렌드코리아2025", "author": "김난도", "bookType": "트렌드", "summary": "2025년 트렌드에 대한 내용", "completedDate": "2024-11-27", "year": "2024", "month": 11, "status": "completed", "externalUrl": "", "updatedAt": 1752223380000}, {"id": "1435d750-ba6c-8086-b958-f7df6c5adbda", "notionUrl": "https://app.notion.com/p/1435d750ba6c8086b958f7df6c5adbda", "emoji": "📚", "title": "채식주의자", "author": "한강", "bookType": "소설", "summary": "나무가 되고 싶은 정신이상자와 그 가족 이야기", "completedDate": "2024-11-17", "year": "2024", "month": 11, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/23", "updatedAt": 1752223380000}, {"id": "1355d750-ba6c-801a-80d1-f165ea46a1d9", "notionUrl": "https://app.notion.com/p/1355d750ba6c801a80d1f165ea46a1d9", "emoji": "📚", "title": "나쁜 골프", "author": "강찬욱", "bookType": "교양", "summary": "골프에 대한 느낌을 시로 표현", "completedDate": "2024-11-01", "year": "2024", "month": 11, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/21", "updatedAt": 1752223380000}, {"id": "1185d750-ba6c-80e4-82bb-cd1b80c4735f", "notionUrl": "https://app.notion.com/p/1185d750ba6c80e482bbcd1b80c4735f", "emoji": "📚", "title": "불변의 법칙", "author": "모건 하우절", "bookType": "교양", "summary": "변하지 않는 것들에 대해 23가지의 사례로 설명", "completedDate": "2024-10-03", "year": "2024", "month": 10, "status": "completed", "externalUrl": "", "updatedAt": 1752223380000}, {"id": "1125d750-ba6c-80ee-9193-cd495d463582", "notionUrl": "https://app.notion.com/p/1125d750ba6c80ee9193cd495d463582", "emoji": "📚", "title": "물고기는 존재하지 않는다", "author": "룰루밀러", "bookType": "교양", "summary": "데이비드 스타 조던의 업적에 대한 회고록과 우생학에 대한 비난", "completedDate": "2024-09-23", "year": "2024", "month": 9, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/19", "updatedAt": 1752223380000}, {"id": "96787d65-d6d0-40bb-bdd2-8843b8dadb8e", "notionUrl": "https://app.notion.com/p/96787d65d6d040bbbdd28843b8dadb8e", "emoji": "📚", "title": "이웃집 백만장자", "author": "토머스 J.스탠리, 윌리엄 D.댄코", "bookType": "자기계발", "summary": "미국의 백만장자들의 삶의 습관과 돈을 모으는 방법", "completedDate": "2024-09-09", "year": "2024", "month": 9, "status": "completed", "externalUrl": "https://brunch.co.kr/@crimson0425/18", "updatedAt": 1752223380000}, {"id": "06d493d4-4972-4c39-8831-8cf06fbd4ac4", "notionUrl": "https://app.notion.com/p/06d493d449724c3988318cf06fbd4ac4", "emoji": "📚", "title": "이기적 유전자", "author": "리처드 도킨스", "bookType": "과학교양", "summary": "유전자 입장의 해석", "completedDate": "2024-08-25", "year": "2024", "month": 8, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1AKtQgr1X6Xl83uZcKEXe_WdKynWnaWYqB1hAqKlFeb0/edit", "updatedAt": 1752223380000}, {"id": "4ed9fbf6-7d31-4dc7-9514-54597e02790a", "notionUrl": "https://app.notion.com/p/4ed9fbf67d314dc7951454597e02790a", "emoji": "📚", "title": "하멜표류기", "author": "헨드릭하멜(신동운)", "bookType": "역사", "summary": "13년간 조선에 억류된 하멜일행 이야기", "completedDate": "2024-04-14", "year": "2024", "month": 4, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1e3N-tMH9kZYf8JuYQZHsoAd5Guea8MiAbY4LcDZFANg/edit?usp=drive_link", "updatedAt": 1752223440000}, {"id": "0f78c6fe-76c3-403a-b3a5-30ffb39a572d", "notionUrl": "https://app.notion.com/p/0f78c6fe76c3403ab3a530ffb39a572d", "emoji": "📚", "title": "프로덕트 매니지먼트", "author": "김영욱", "bookType": "자기계발", "summary": "프로덕트 매니지먼트의 모든 것", "completedDate": "2024-03-21", "year": "2024", "month": 3, "status": "completed", "externalUrl": "", "updatedAt": 1752223440000}, {"id": "5db88735-c822-4b1e-a915-3f1d68054957", "notionUrl": "https://app.notion.com/p/5db88735c8224b1ea9153f1d68054957", "emoji": "📚", "title": "도파미네이션", "author": "애나 램키", "bookType": "교양", "summary": "중독을 이겨내는 과정", "completedDate": "2024-03-16", "year": "2024", "month": 3, "status": "completed", "externalUrl": "https://blog.naver.com/coala_12/223252288023", "updatedAt": 1752223440000}, {"id": "dd229452-c499-4fe1-880e-96ebf8fb5724", "notionUrl": "https://app.notion.com/p/dd229452c4994fe1880e96ebf8fb5724", "emoji": "📚", "title": "돈의 속성", "author": "김승호", "bookType": "교양", "summary": "돈에 관련된 철학, 가치관, 마음가짐 등을 인격화해서 에세이로 표현하였다.", "completedDate": "2024-02-14", "year": "2024", "month": 2, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1eiwloR_thJ1s2m51sFZMCGkNPSCuJghFHzVR3uxzsJg/edit", "updatedAt": 1752223440000}, {"id": "7d184c84-7cec-48a7-9c00-4f6d86633a54", "notionUrl": "https://app.notion.com/p/7d184c847cec48a79c004f6d86633a54", "emoji": "📚", "title": "내 글도 책이 될까요?", "author": "이해사(김욱)", "bookType": "에세이", "summary": "글을 쓰면서 글쓰는 방법에 대해서 얘기해주는 내용", "completedDate": "2024-01-31", "year": "2024", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1752223440000}, {"id": "e23a261d-2b70-49d3-af1c-10e8d33d66e6", "notionUrl": "https://app.notion.com/p/e23a261d2b7049d3af1c10e8d33d66e6", "emoji": "📚", "title": "역행자", "author": "자청", "bookType": "자기계발", "summary": "돈을 버는 방법에 대한 노력하는법", "completedDate": "2024-01-28", "year": "2024", "month": 1, "status": "completed", "externalUrl": "", "updatedAt": 1752223440000}, {"id": "e072cbc8-4dc7-45b8-b9ce-9a564a485318", "notionUrl": "https://app.notion.com/p/e072cbc84dc745b8b9ce9a564a485318", "emoji": "📚", "title": "자본주의", "author": "EBS 자본주의 제작팀", "bookType": "교양", "summary": "자본주의 시대의 흐름과 금융지식을 알기쉽게 작성", "completedDate": "2024-01-19", "year": "2024", "month": 1, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1dcirFltFWdnh1PnbmS3Hf_BCaxK1-NMUdESS5GQ2tp8/edit?usp=sharing", "updatedAt": 1752223440000}, {"id": "7de23deb-b232-4204-83b2-3562c423c281", "notionUrl": "https://app.notion.com/p/7de23debb232420483b23562c423c281", "emoji": "📚", "title": "김미경의 마흔수업", "author": "김미경", "bookType": "자기계발", "summary": "마흔살을 멋지게 살아내고, 목표를 이루는 방법을 길잡이해주는 책", "completedDate": "2024-01-09", "year": "2024", "month": 1, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1LM17kJCl3qt8k4V6wuEBNDjdNkhL9DzOHPM67__fvcA/edit?usp=sharing", "updatedAt": 1752223440000}, {"id": "93a98cc6-f418-43c5-838f-8c871a06dcdc", "notionUrl": "https://app.notion.com/p/93a98cc6f41843c5838f8c871a06dcdc", "emoji": "📚", "title": "코스모스", "author": "칼 세이건", "bookType": "과학교양", "summary": "철학, 역사. 우주 등 경이로운 것들을 연결짓는 내용", "completedDate": "2024-01-08", "year": "2024", "month": 1, "status": "completed", "externalUrl": "https://docs.google.com/document/d/18Hy3tQaFzryTiX9Zbl8uikin6up-6ypia6RSLGaU_TU/edit?usp=sharing", "updatedAt": 1752223440000}, {"id": "6e995741-d1cb-4175-af8c-7bb052444ee2", "notionUrl": "https://app.notion.com/p/6e995741d1cb4175af8c7bb052444ee2", "emoji": "📚", "title": "마흔에 읽는 쇼펜하우어", "author": "강용수", "bookType": "교양", "summary": "쇼펜하우어의 말을 인용하여 인생에 대한 방향을 제시", "completedDate": "2024-01-05", "year": "2024", "month": 1, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1RHba6GR4pxpejcPtqYnni4aQxq4RtQpu_nRAwx_mT2o/edit?usp=sharing", "updatedAt": 1752223440000}, {"id": "fba9920d-079d-4ed2-9988-24309e8e0603", "notionUrl": "https://app.notion.com/p/2024-fba9920d079d4ed2998824309e8e0603", "emoji": "📚", "title": "머니 트렌드 2024", "author": "김도윤외7명", "bookType": "트렌드", "summary": "각 분야의 돈 전문가들이 2024 트렌드에 대해서 57가지 키워드 제시", "completedDate": "2023-11-27", "year": "2023", "month": 11, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1M_ARb-2LiVkLuJINhKeqecgri0QYOaArFhFBDzATPW8/edit?usp=sharing", "updatedAt": 1752223560000}, {"id": "4eb882be-c78b-42da-ad01-80b5fcf59138", "notionUrl": "https://app.notion.com/p/4eb882bec78b42daad0180b5fcf59138", "emoji": "📚", "title": "새빨간 거짓말, 통계", "author": "대럴 허프, 박영훈(번역)", "bookType": "참고서", "summary": "통계의 숫자에 속지말고, 분석하여 제대로된 의사결정을 하자", "completedDate": "2023-11-22", "year": "2023", "month": 11, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1yW8HqvLC56ACHq9sPA3yfSir5dRjsVjT4-mXtZfl2rc/edit?usp=sharing", "updatedAt": 1752223560000}, {"id": "eb36e7da-3870-455a-85d4-83a43567ef2e", "notionUrl": "https://app.notion.com/p/2024-eb36e7da3870455a85d483a43567ef2e", "emoji": "📚", "title": "트렌드코리아 2024", "author": "김난도, 전미영, 최지혜, 이수진, 권정윤, 한다혜, 이준영, 이향은, 이혜원, 추예린, 전다혜", "bookType": "트렌드", "summary": "2024년 대한민국의 트렌드 전망", "completedDate": "2023-11-13", "year": "2023", "month": 11, "status": "completed", "externalUrl": "https://docs.google.com/document/d/1C4TrUbuDtj3j8fD-EgblFM8XprC35BDF-55JvlYMURs/edit?usp=drive_link", "updatedAt": 1756858620000}, {"id": "b9f1f8bd-cd32-41f9-a7a2-1b67ef6e8a03", "notionUrl": "https://app.notion.com/p/b9f1f8bdcd3241f9a7a21b67ef6e8a03", "emoji": "📚", "title": "세이노의 가르침", "author": "세이노", "bookType": "자기계발", "summary": "부자 세이노의 경험 및 충고 등", "completedDate": "2023-11-05", "year": "2023", "month": 11, "status": "completed", "externalUrl": "https://drive.google.com/file/d/1o_CTRIkPRJAc8X_C8zoHfMuED0QrsYTu/view?usp=drivesdk", "updatedAt": 1752223560000}, {"id": "a5a633dd-c6fc-4ba9-b0f5-8ed131e7bb85", "notionUrl": "https://app.notion.com/p/a5a633ddc6fc4ba9b0f58ed131e7bb85", "emoji": "📚", "title": "타이탄의 도구들", "author": "팀 패리스", "bookType": "자기계발", "summary": "성공한 사람들의 습관과 루틴을 보고 당신들도 자신만의 습관을 만들어서 해봐~", "completedDate": "2023-10-05", "year": "2023", "month": 10, "status": "completed", "externalUrl": "https://drive.google.com/file/d/1w1thO7GooPHbp_5INX3Y40vvYgxyhsSs/view", "updatedAt": 1752223560000}, {"id": "96c9c391-c252-478b-be5e-d001c7602ee3", "notionUrl": "https://app.notion.com/p/IT-96c9c391c252478bbe5ed001c7602ee3", "emoji": "📚", "title": "IT 좀 아는 사람", "author": "닐 메타, 아디티야 아가쉐, 파스 디트로자", "bookType": "자기계발", "summary": "구글, 페이스북, 마이크로 소프트에서 Product Manager로 일했던 사람들의 인사이트를 모은 내용", "completedDate": "2023-08-06", "year": "2023", "month": 8, "status": "completed", "externalUrl": "https://blog.naver.com/skyzkzk/222632026355", "updatedAt": 1752223620000}, {"id": "72aaff1f-f71a-47ef-9930-caf476373dfd", "notionUrl": "https://app.notion.com/p/72aaff1ff71a47ef9930caf476373dfd", "emoji": "📚", "title": "프로덕트 매니저는 무슨 일을 하고 있을까", "author": "최민", "bookType": "자기계발", "summary": "프로덕트 매니저의 역할에 대해서 세세하게 내용을 정리", "completedDate": "2023-07-27", "year": "2023", "month": 7, "status": "completed", "externalUrl": "", "updatedAt": 1752223620000}, {"id": "ac1fd61a-f7df-4cbb-a215-e811ee134631", "notionUrl": "https://app.notion.com/p/ac1fd61af7df4cbba215e811ee134631", "emoji": "📚", "title": "하얼빈", "author": "김훈", "bookType": "소설", "summary": "안중근 이야기", "completedDate": "2023-07-19", "year": "2023", "month": 7, "status": "completed", "externalUrl": "", "updatedAt": 1752223620000}, {"id": "cf681690-dd49-4032-9c3c-01d1a1bf557b", "notionUrl": "https://app.notion.com/p/cf681690dd4940329c3c01d1a1bf557b", "emoji": "📚", "title": "최초의 질문", "author": "이정동", "bookType": "기술혁신", "summary": "기술 혁신을 위한 최초의 질문들", "completedDate": "2023-05-11", "year": "2023", "month": 5, "status": "completed", "externalUrl": "https://www.cadgraphics.co.kr/newsview.php?catecode=2&num=71300", "updatedAt": 1752223620000}, {"id": "79a6fe2b-a90d-4cdf-9191-a9fcfc6b0df5", "notionUrl": "https://app.notion.com/p/79a6fe2ba90d4cdf9191a9fcfc6b0df5", "emoji": "📚", "title": "트랜드포메이션, 조직의 습관을 바꾸다", "author": "황재선", "bookType": "교양", "summary": "기업의 DX전환에 대한 방법", "completedDate": "2023-04-15", "year": "2023", "month": 4, "status": "completed", "externalUrl": "", "updatedAt": 1752223620000}, {"id": "625f5708-7e82-4de7-93ef-d98e8a67ef9f", "notionUrl": "https://app.notion.com/p/625f57087e824de793efd98e8a67ef9f", "emoji": "📚", "title": "피터드러커의 회계 수업", "author": "하야시 아츠무", "bookType": "교양", "summary": "숫자만이 아니라 경영 전체를 보아야한다.", "completedDate": "2023-04-12", "year": "2023", "month": 4, "status": "completed", "externalUrl": "https://blog.naver.com/yjylab/221560476803", "updatedAt": 1752223620000}, {"id": "26f74963-7a33-486b-a4ac-b4cc3c656868", "notionUrl": "https://app.notion.com/p/12-26f749637a33486ba4acb4cc3c656868", "emoji": "📚", "title": "12가지 인생의 법칙", "author": "조던B. 피터슨", "bookType": "교양", "summary": "인생을 헤쳐나가기 위한 12가지 법칙 설명.", "completedDate": "2023-04-11", "year": "2023", "month": 4, "status": "completed", "externalUrl": "", "updatedAt": 1752223620000}];
+
+    let books = [...INITIAL_NOTION_BOOKS];
+    let annualGoal = 60;
+    let lastSyncedAt = '2026-10-28 22:20';
+    let currentYearFilter = 'all';
+    let currentViewMode = 'card'; // 'card' | 'table'
+    let reviewOnlyFilter = false; // [✍️ 서평/링크 있는 책만 보기] 토글 상태
+    let filteredListCache = [];
+    let notionDbTitle = '독서 후 글쓰기';
+    let notionDbId = 'c24fd2e2-f56e-4969-aa1d-fc2039fbe008';
+    let isSyncing = false;
+    let activeEssayBookId = null;
+
+    function hasExternalOrEssay(b) {
+      return Boolean((b.externalUrl && b.externalUrl.trim()) || (b.bodyContent && b.bodyContent.trim()));
+    }
+
+    function getExternalBadgeInfo(url) {
+      if (!url) return null;
+      const lower = url.toLowerCase();
+      if (lower.includes('brunch.co.kr')) {
+        return { label: '🖋️ 브런치 서평 읽기 ↗', sourceName: '브런치(@crimson0425) 발행 서평', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' };
+      }
+      if (lower.includes('blog.naver.com')) {
+        return { label: '🖋️ 네이버 블로그 서평 ↗', sourceName: '네이버 블로그 서평', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' };
+      }
+      if (lower.includes('docs.google.com') || lower.includes('drive.google.com')) {
+        return { label: '📄 독서노트 문서 열기 ↗', sourceName: '구글 독서노트 원문', badgeClass: 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100' };
+      }
+      return { label: '🖋️ 외부 서평/칼럼 읽기 ↗', sourceName: '외부 아티클 링크', badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' };
+    }
+
+    function loadLocalCache() {
+      try {
+        const savedBooks = localStorage.getItem(STORAGE_KEY_BOOKS);
+        const savedGoal = localStorage.getItem(STORAGE_KEY_GOAL);
+        const savedSyncedAt = localStorage.getItem(STORAGE_KEY_SYNCED_AT);
+        if (savedBooks) {
+          const parsed = JSON.parse(savedBooks);
+          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].bookType !== undefined && parsed[0].year !== undefined) {
+            books = parsed;
+          }
+        }
+        if (savedGoal) annualGoal = parseInt(savedGoal, 10) || 60;
+        if (savedSyncedAt) lastSyncedAt = savedSyncedAt;
+      } catch (e) {}
+    }
+
+    function saveLocalCache() {
+      try {
+        localStorage.setItem(STORAGE_KEY_BOOKS, JSON.stringify(books));
+        localStorage.setItem(STORAGE_KEY_GOAL, String(annualGoal));
+        localStorage.setItem(STORAGE_KEY_SYNCED_AT, String(lastSyncedAt));
+      } catch (e) {}
+    }
+
+    async function loadStaticJsonSnapshot() {
+      try {
+        const res = await fetch(`./data/notion_books.json?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return false;
+        const data = await res.json();
+        if (Array.isArray(data.books) && data.books.length > 0) {
+          books = data.books;
+          if (data.databaseTitle) notionDbTitle = data.databaseTitle;
+          if (data.syncedAt) lastSyncedAt = data.syncedAt;
+          saveLocalCache();
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    function updateNotionBadge(state, customText) {
+      const badge = document.getElementById('notionStatusBadge');
+      const dot = document.getElementById('notionBadgeDot');
+      const text = document.getElementById('notionBadgeText');
+
+      if (state === 'syncing') {
+        badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center gap-1.5';
+        dot.className = 'w-2 h-2 rounded-full bg-indigo-500 animate-ping';
+        text.textContent = customText || 'Notion DB 수동 동기화 중...';
+      } else {
+        badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5';
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        text.textContent = customText || `수동 동기화 모드 (읽기 전용 · 마지막 동기화: ${lastSyncedAt})`;
+      }
+      document.getElementById('footerSyncStatus').textContent =
+        `🔒 Notion [${notionDbTitle}] 단방향 수동 동기화 모드 (읽기 전용) • 총 ${books.length}권 • 마지막 동기화: ${lastSyncedAt}`;
+    }
+
+    // 오직 사용자가 [🔄 Notion 동기화] 버튼을 직접 클릭했을 때만 호출됨
+    async function syncFromNotion(manual = false) {
+      if (!manual || isSyncing) return;
+      isSyncing = true;
+      const syncBtn = document.getElementById('syncBtn');
+      if (syncBtn) syncBtn.disabled = true;
+      updateNotionBadge('syncing', 'Notion DB에서 최신 데이터를 읽어오는 중...');
+
+      try {
+        let synced = false;
+        // 1순위: 로컬 읽기 전용 동기화 브리지(sync_readonly.py --serve) 호출 시도
+        try {
+          const res = await fetch(`${LOCAL_BRIDGE_BASE}/api/sync?t=${Date.now()}`, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.books) && data.books.length > 0) {
+              books = data.books;
+              notionDbTitle = data.databaseTitle || notionDbTitle;
+              lastSyncedAt = data.syncedAt || new Date().toISOString().slice(0, 16).replace('T', ' ');
+              synced = true;
+              if (data.connected) {
+                showToast(`🔄 Notion [${notionDbTitle}] 최신 데이터(${books.length}권)를 수동 동기화했습니다!`);
+              } else {
+                showToast(`🔄 로컬 정적 스냅샷(${books.length}권)을 새로고침했습니다.`);
+              }
+            }
+          }
+        } catch (bridgeErr) {
+          // 로컬 브리지 미실행 시 GitHub Pages 정적 JSON 파일(data/notion_books.json)에서 최신 데이터 로드
+        }
+
+        // 2순위: GitHub Pages 정적 데이터 파일(data/notion_books.json) 다시 읽기
+        if (!synced) {
+          const ok = await loadStaticJsonSnapshot();
+          if (ok) {
+            showToast(`🔄 최신 데이터 파일(data/notion_books.json · ${books.length}권)을 동기화했습니다!`);
+          } else {
+            showToast(`ℹ️ 내장 스냅샷(${books.length}권)이 최신 상태입니다.`);
+          }
+        }
+
+        document.getElementById('headerTitle').textContent = notionDbTitle;
+        saveLocalCache();
+        populateBookTypeFilter();
+        renderAll();
+      } finally {
+        updateNotionBadge('idle');
+        if (syncBtn) syncBtn.disabled = false;
+        isSyncing = false;
+      }
+    }
+
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      const btnCard = document.getElementById('viewBtnCard');
+      const btnTable = document.getElementById('viewBtnTable');
+      if (mode === 'card') {
+        btnCard.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition';
+        btnTable.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition';
+      } else {
+        btnTable.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition';
+        btnCard.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition';
+      }
+      renderBooksGrid();
+    }
+
+    function toggleReviewOnlyFilter() {
+      reviewOnlyFilter = !reviewOnlyFilter;
+      const btn = document.getElementById('reviewOnlyToggleBtn');
+      const badge = document.getElementById('reviewCountBadge');
+      if (reviewOnlyFilter) {
+        btn.className = 'px-3 py-2 rounded-xl text-xs font-bold border border-indigo-600 bg-indigo-600 text-white shadow-xs transition flex items-center gap-1.5';
+        badge.className = 'px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-extrabold';
+      } else {
+        btn.className = 'px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition flex items-center gap-1.5';
+        badge.className = 'px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-extrabold';
+      }
+      renderAll();
+    }
+
+    function resetFilters() {
+      currentYearFilter = 'all';
+      reviewOnlyFilter = false;
+      document.getElementById('searchInput').value = '';
+      document.getElementById('typeFilterSelect').value = 'all';
+      const btn = document.getElementById('reviewOnlyToggleBtn');
+      const badge = document.getElementById('reviewCountBadge');
+      btn.className = 'px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition flex items-center gap-1.5';
+      badge.className = 'px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-extrabold';
+      setYearFilter('all');
+    }
+
+    function populateBookTypeFilter() {
+      const select = document.getElementById('typeFilterSelect');
+      const currentVal = select.value;
+      const counts = {};
+      books.forEach(b => {
+        const t = (b.bookType || '미분류').trim();
+        counts[t] = (counts[t] || 0) + 1;
+      });
+      const sortedTypes = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      select.innerHTML = `<option value="all">모든 책유형 (${books.length})</option>` +
+        sortedTypes.map(([t, c]) => `<option value="${escapeHtml(t)}">${escapeHtml(t)} (${c})</option>`).join('');
+      if ([...select.options].some(o => o.value === currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    function setYearFilter(year) {
+      currentYearFilter = year;
+      document.querySelectorAll('.year-btn').forEach(btn => {
+        if (btn.dataset.year === year) {
+          btn.className = 'year-btn px-3.5 py-2 rounded-xl text-xs font-bold transition bg-slate-900 text-white';
+        } else {
+          btn.className = 'year-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:bg-slate-100';
+        }
+      });
+      renderAll();
+    }
+
+    function renderAll() {
+      const books2026 = books.filter(b => String(b.year) === '2026');
+      const books2025 = books.filter(b => String(b.year) === '2025');
+      const books2024 = books.filter(b => String(b.year) === '2024');
+      const books2023 = books.filter(b => String(b.year) === '2023');
+      const reviewBooksCount = books.filter(hasExternalOrEssay).length;
+
+      // 1. Update 2026 Goal Hero
+      const completed2026 = books2026.length;
+      const rawPercent = annualGoal > 0 ? Math.round((completed2026 / annualGoal) * 100) : 0;
+      const clampedPercent = Math.min(100, rawPercent);
+      const remaining = Math.max(0, annualGoal - completed2026);
+
+      document.getElementById('goalHeadline').textContent =
+        `2026년 목표 ${annualGoal}권 중 ${completed2026}권 완독!`;
+      document.getElementById('goalPercentText').textContent = `${rawPercent}%`;
+      document.getElementById('completedCountLabel').textContent = completed2026;
+      document.getElementById('targetCountLabel').textContent = annualGoal;
+      document.getElementById('remainingCountLabel').textContent =
+        remaining === 0 ? '🎉 올해 목표를 달성했습니다!' : `목표까지 ${remaining}권 남음`;
+      document.getElementById('goalLinearBar').style.width = `${clampedPercent}%`;
+      document.getElementById('monthlyRecommendText').textContent =
+        `💡 연간 목표 기준 월평균 ${(annualGoal / 12).toFixed(1)}권`;
+
+      const circumference = 2 * Math.PI * 50;
+      const offset = circumference - (clampedPercent / 100) * circumference;
+      const ringEl = document.getElementById('goalRing');
+      ringEl.style.strokeDasharray = `${circumference}`;
+      ringEl.style.strokeDashoffset = `${offset}`;
+
+      // 2. Update 2x2 Summary Metrics
+      document.getElementById('stat2026Count').textContent = completed2026;
+      document.getElementById('stat2026Pace').textContent = `2026년 월평균 ${(completed2026 / 10).toFixed(1)}권 독서 중`;
+      document.getElementById('statTotalCount').textContent = books.length;
+      document.getElementById('statTotalSub').textContent = `외부 서평/문서 ${reviewBooksCount}편 수록`;
+      document.getElementById('statYearlyGrowth').textContent =
+        `${books2023.length} → ${books2024.length} → ${books2025.length} → ${books2026.length}권`;
+      document.getElementById('statYearlySub').textContent = '2023년 → 2024년 → 2025년 → 2026년';
+
+      // Tab & Filter counts
+      document.getElementById('tabCountAll').textContent = books.length;
+      document.getElementById('tabCount2026').textContent = books2026.length;
+      document.getElementById('tabCount2025').textContent = books2025.length;
+      document.getElementById('tabCount2024').textContent = books2024.length;
+      document.getElementById('tabCount2023').textContent = books2023.length;
+      document.getElementById('reviewCountBadge').textContent = reviewBooksCount;
+
+      // Scope for charts based on selected year tab
+      const chartScopeBooks = currentYearFilter === 'all'
+        ? books
+        : books.filter(b => String(b.year) === currentYearFilter);
+      const scopeLabel = currentYearFilter === 'all' ? '전체 연도' : `${currentYearFilter}년`;
+
+      renderMonthlyChart(chartScopeBooks, scopeLabel);
+      renderGenreBreakdown(chartScopeBooks, scopeLabel);
+      renderBooksGrid();
+    }
+
+    function renderMonthlyChart(scopeBooks, scopeLabel) {
+      document.getElementById('monthlyChartTitle').textContent = `📅 월별 독서 추이 (${scopeLabel})`;
+      const counts = Array(12).fill(0);
+      scopeBooks.forEach(b => {
+        const m = (Number(b.month) || 1) - 1;
+        if (m >= 0 && m < 12) counts[m]++;
+      });
+      const maxCount = Math.max(1, ...counts);
+      const bestMonthIdx = counts.indexOf(Math.max(...counts));
+      const bestBadge = document.getElementById('bestMonthBadge');
+      if (scopeBooks.length > 0 && Math.max(...counts) > 0) {
+        bestBadge.textContent = `🏅 최다 독서: ${bestMonthIdx + 1}월 (${counts[bestMonthIdx]}권)`;
+      } else {
+        bestBadge.textContent = '기록 없음';
+      }
+
+      const container = document.getElementById('monthlyChartContainer');
+      container.innerHTML = counts.map((count, idx) => {
+        const heightPct = count === 0 ? 8 : Math.max(18, Math.round((count / maxCount) * 100));
+        const activeClass = count > 0
+          ? 'bg-indigo-600 hover:bg-indigo-700'
+          : 'bg-slate-200';
+        return `
+          <div class="flex flex-col items-center justify-end h-full group">
+            <span class="text-[11px] font-bold ${count > 0 ? 'text-indigo-600' : 'text-slate-300'} mb-1">${count}</span>
+            <div class="w-full max-w-[26px] rounded-t-lg transition-all duration-300 ${activeClass}" style="height: ${heightPct}%"></div>
+            <span class="text-[11px] text-slate-500 mt-2 font-medium">${idx + 1}월</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderGenreBreakdown(scopeBooks, scopeLabel) {
+      document.getElementById('genreChartTitle').textContent = `📊 책유형별 분포 (${scopeLabel} TOP 6)`;
+      const barColors = [
+        'bg-indigo-600',
+        'bg-emerald-500',
+        'bg-amber-500',
+        'bg-rose-500',
+        'bg-sky-500',
+        'bg-violet-500'
+      ];
+      const counts = {};
+      scopeBooks.forEach(b => {
+        const t = (b.bookType || '미분류').trim();
+        counts[t] = (counts[t] || 0) + 1;
+      });
+      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const total = Math.max(1, scopeBooks.length);
+
+      // Update Top Genre KPI from all books
+      const allCounts = {};
+      books.forEach(b => {
+        const t = (b.bookType || '미분류').trim();
+        allCounts[t] = (allCounts[t] || 0) + 1;
+      });
+      const allEntries = Object.entries(allCounts).sort((a, b) => b[1] - a[1]);
+      if (allEntries.length > 0 && books.length > 0) {
+        document.getElementById('statTopGenre').textContent = allEntries[0][0];
+        document.getElementById('statTopGenreSub').textContent =
+          `전체 ${books.length}권 중 ${allEntries[0][1]}권 (${Math.round((allEntries[0][1] / books.length) * 100)}%)`;
+      }
+
+      const container = document.getElementById('genreListContainer');
+      if (entries.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 py-4">데이터가 없습니다.</p>`;
+        return;
+      }
+
+      container.innerHTML = entries.slice(0, 6).map(([cat, cnt], i) => {
+        const pct = Math.round((cnt / total) * 100);
+        const color = barColors[i % barColors.length];
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-700">${escapeHtml(cat)}</span>
+              <span class="text-slate-500 font-medium">${cnt}권 (${pct}%)</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full ${color} rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBooksGrid() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const typeFilter = document.getElementById('typeFilterSelect').value;
+      const sortBy = document.getElementById('sortSelect').value;
+
+      let filtered = books.filter(b => {
+        if (currentYearFilter !== 'all' && String(b.year) !== currentYearFilter) return false;
+        if (typeFilter !== 'all' && (b.bookType || '').trim() !== typeFilter) return false;
+        if (reviewOnlyFilter && !hasExternalOrEssay(b)) return false;
+        if (query) {
+          const hay = `${b.title} ${b.author} ${b.summary || ''} ${b.bookType || ''} ${b.completedDate || ''} ${b.bodyContent || ''}`.toLowerCase();
+          if (!hay.includes(query)) return false;
+        }
+        return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortBy === 'date_asc') {
+          return (a.completedDate || '9999').localeCompare(b.completedDate || '9999');
+        }
+        if (sortBy === 'title') {
+          return (a.title || '').localeCompare(b.title || '', 'ko');
+        }
+        return (b.completedDate || '').localeCompare(a.completedDate || '');
+      });
+
+      filteredListCache = filtered;
+
+      const grid = document.getElementById('booksGrid');
+      const tableWrapper = document.getElementById('booksTableWrapper');
+      const tableBody = document.getElementById('booksTableBody');
+      const empty = document.getElementById('emptyState');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        tableBody.innerHTML = '';
+        grid.classList.add('hidden');
+        tableWrapper.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      if (currentViewMode === 'table') {
+        grid.classList.add('hidden');
+        tableWrapper.classList.remove('hidden');
+        tableBody.innerHTML = filtered.map(b => {
+          const extInfo = getExternalBadgeInfo(b.externalUrl);
+          return `
+            <tr class="hover:bg-slate-50/80 transition cursor-pointer" onclick="openEssayModal('${b.id}')">
+              <td class="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                <div class="hover:text-indigo-600 flex items-center gap-2 text-left">
+                  <span>${escapeHtml(b.emoji || '📚')}</span>
+                  <span class="underline decoration-slate-300 underline-offset-2">${escapeHtml(b.title)}</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 text-slate-600 whitespace-nowrap">${escapeHtml(b.author)}</td>
+              <td class="py-3.5 px-4 whitespace-nowrap">
+                ${b.completedDate
+                  ? `<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-semibold">${escapeHtml(b.completedDate)}</span>`
+                  : `<span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-semibold">읽는 중</span>`}
+              </td>
+              <td class="py-3.5 px-3 text-slate-600 font-semibold whitespace-nowrap">${escapeHtml(b.year)}</td>
+              <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate" title="${escapeHtml(b.summary)}">${escapeHtml(b.summary || '-')}</td>
+              <td class="py-3.5 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold">${escapeHtml(b.bookType)}</span>
+              </td>
+              <td class="py-3.5 px-3 whitespace-nowrap" onclick="event.stopPropagation()">
+                ${extInfo
+                  ? `<a href="${escapeHtml(b.externalUrl)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition inline-flex items-center gap-1 ${extInfo.badgeClass}">${extInfo.label}</a>`
+                  : `<span class="text-slate-300">-</span>`}
+              </td>
+              <td class="py-3.5 px-4 text-right whitespace-nowrap" onclick="event.stopPropagation()">
+                <div class="inline-flex items-center gap-1.5">
+                  <button onclick="openEssayModal('${b.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold">📖 리뷰 읽기</button>
+                  ${b.notionUrl ? `
+                    <a href="${escapeHtml(b.notionUrl)}" target="_blank" rel="noopener noreferrer" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition" title="Notion 원본 보기">↗</a>
+                  ` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        return;
+      }
+
+      tableWrapper.classList.add('hidden');
+      grid.classList.remove('hidden');
+
+      grid.innerHTML = filtered.map(b => {
+        const dateBadge = b.completedDate
+          ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">완료일: ${escapeHtml(b.completedDate)}</span>`
+          : `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">📖 읽는 중</span>`;
+
+        const extInfo = getExternalBadgeInfo(b.externalUrl);
+
+        return `
+          <article onclick="openEssayModal('${b.id}')" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs card-hover flex flex-col justify-between cursor-pointer">
+            <div>
+              <!-- Top tags: 책유형 / 연도 / 완료일 -->
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700">${escapeHtml(b.bookType)}</span>
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">${escapeHtml(b.year)}년</span>
+                </div>
+                ${dateBadge}
+              </div>
+
+              <!-- 책이름 & 저자 -->
+              <div class="flex items-start gap-2.5 mt-2">
+                <span class="text-2xl select-none">${escapeHtml(b.emoji || '📚')}</span>
+                <div class="min-w-0 flex-1">
+                  <h4 class="text-base font-extrabold text-slate-900 truncate" title="${escapeHtml(b.title)}">${escapeHtml(b.title)}</h4>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">저자: ${escapeHtml(b.author)}</p>
+                </div>
+              </div>
+
+              <!-- 줄거리 -->
+              <div class="mt-3.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed min-h-[64px]">
+                <span class="font-bold text-slate-700 mr-1">[줄거리]</span>${escapeHtml(b.summary || '등록된 줄거리가 없습니다.')}
+              </div>
+
+              ${extInfo ? `
+                <div class="mt-3" onclick="event.stopPropagation()">
+                  <a href="${escapeHtml(b.externalUrl)}" target="_blank" rel="noopener noreferrer" class="w-full px-3 py-2 rounded-xl border text-xs font-extrabold transition flex items-center justify-between ${extInfo.badgeClass}">
+                    <span>${extInfo.label}</span>
+                    <span class="text-[10px] opacity-75">${extInfo.sourceName}</span>
+                  </a>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Read-Only Actions -->
+            <div class="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2" onclick="event.stopPropagation()">
+              <button onclick="openEssayModal('${b.id}')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition flex items-center gap-1.5">
+                <span>📖</span>
+                <span>북리뷰 & 에세이 읽기</span>
+              </button>
+
+              <div class="flex items-center gap-1">
+                ${b.notionUrl ? `
+                  <a href="${escapeHtml(b.notionUrl)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition" title="Notion 원본 페이지 보기">
+                    Notion ↗
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatEssayHtml(rawText, book) {
+      const cleaned = String(rawText || '').trim();
+      if (!cleaned) {
+        const extInfo = getExternalBadgeInfo(book.externalUrl);
+        return `
+          <div class="py-6 text-center space-y-3">
+            <div class="text-2xl">📝</div>
+            <p class="text-sm font-bold text-slate-700">이 도서는 한줄 줄거리 요약으로 기록되어 있습니다.</p>
+            <p class="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+              "${escapeHtml(book.summary || '등록된 줄거리 요약이 없습니다.')}"
+            </p>
+            ${extInfo ? `
+              <div class="pt-2">
+                <a href="${escapeHtml(book.externalUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold border ${extInfo.badgeClass}">
+                  ${extInfo.label}
+                </a>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      return cleaned
+        .split(/\n{2,}/)
+        .map(block => {
+          const line = block.trim();
+          if (!line) return '';
+          if (line.startsWith('### ')) {
+            return `<h3>${escapeHtml(line.slice(4))}</h3>`;
+          }
+          if (line.startsWith('❝ ')) {
+            return `<blockquote>${escapeHtml(line.slice(2))}</blockquote>`;
+          }
+          return `<p>${escapeHtml(line).replace(/\n/g, '<br/>')}</p>`;
+        })
+        .join('');
+    }
+
+    // Book Review Article Reader Modal (Read-Only)
+    async function openEssayModal(bookId) {
+      const b = books.find(item => item.id === bookId);
+      if (!b) return;
+      activeEssayBookId = bookId;
+
+      document.getElementById('essayModalEmoji').textContent = b.emoji || '📚';
+      document.getElementById('essayModalType').textContent = `${b.bookType} · ${b.year}년`;
+      document.getElementById('essayModalDate').textContent = b.completedDate ? `완료일: ${b.completedDate}` : '읽는 중';
+      document.getElementById('essayModalTitle').textContent = b.title;
+      document.getElementById('essayModalAuthor').textContent = `저자: ${b.author}`;
+      document.getElementById('essayModalSummary').textContent = b.summary || '등록된 줄거리가 없습니다.';
+      document.getElementById('essayModalNotionLink').href = b.notionUrl || '#';
+
+      // External Review Banner
+      const extBanner = document.getElementById('essayModalExternalBanner');
+      const extInfo = getExternalBadgeInfo(b.externalUrl);
+      if (extInfo && b.externalUrl) {
+        extBanner.classList.remove('hidden');
+        document.getElementById('essayModalExternalTitle').textContent = `${extInfo.sourceName}이 연결된 도서입니다`;
+        document.getElementById('essayModalExternalUrlText').textContent = b.externalUrl;
+        document.getElementById('essayModalExternalLink').href = b.externalUrl;
+        document.getElementById('essayModalExternalBtnLabel').textContent = extInfo.label;
+      } else {
+        extBanner.classList.add('hidden');
+      }
+
+      // Update Prev / Next buttons
+      const list = filteredListCache.length > 0 ? filteredListCache : books;
+      const idx = list.findIndex(item => item.id === bookId);
+      document.getElementById('prevBookBtn').disabled = idx <= 0;
+      document.getElementById('nextBookBtn').disabled = idx === -1 || idx >= list.length - 1;
+      document.getElementById('modalBookPosition').textContent = idx > -1 ? `${idx + 1} / ${list.length}` : `- / ${list.length}`;
+
+      const readerEl = document.getElementById('essayReaderContent');
+      readerEl.innerHTML = formatEssayHtml(b.bodyContent, b);
+
+      const modal = document.getElementById('essayModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      // 본문이 아직 캐시되지 않은 경우 로컬 읽기 전용 브리지에서 조회 시도 (Write 일절 없음)
+      if (!b.bodyContent) {
+        try {
+          const res = await fetch(`${LOCAL_BRIDGE_BASE}/api/books/${bookId}/content?t=${Date.now()}`, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ok && data.bodyContent && activeEssayBookId === bookId) {
+              b.bodyContent = data.bodyContent;
+              saveLocalCache();
+              readerEl.innerHTML = formatEssayHtml(b.bodyContent, b);
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    function navigateModalBook(direction) {
+      if (!activeEssayBookId) return;
+      const list = filteredListCache.length > 0 ? filteredListCache : books;
+      const idx = list.findIndex(item => item.id === activeEssayBookId);
+      if (idx === -1) return;
+      const target = list[idx + direction];
+      if (target) openEssayModal(target.id);
+    }
+
+    function shareCurrentBook() {
+      if (!activeEssayBookId) return;
+      const b = books.find(item => item.id === activeEssayBookId);
+      if (!b) return;
+      const shareLines = [
+        `📚 [${b.title}] — ${b.author} (${b.bookType}, ${b.completedDate || b.year})`,
+        `📌 줄거리: ${b.summary || '-'}`
+      ];
+      if (b.externalUrl) shareLines.push(`🖋️ 서평 링크: ${b.externalUrl}`);
+      const text = shareLines.join('\n');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('📋 북리뷰 요약과 서평 링크가 클립보드에 복사되었습니다!');
+        });
+      } else {
+        showToast('📋 복사를 지원하지 않는 브라우저입니다.');
+      }
+    }
+
+    function closeEssayModal() {
+      const modal = document.getElementById('essayModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      activeEssayBookId = null;
+    }
+
+    // Goal Modal (브라우저 localStorage 전용 — Notion DB에는 일절 쓰기 요청을 보내지 않음)
+    function openGoalModal() {
+      document.getElementById('goalTargetInput').value = annualGoal;
+      const modal = document.getElementById('goalModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeGoalModal() {
+      const modal = document.getElementById('goalModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveGoal(e) {
+      e.preventDefault();
+      const val = Math.max(1, Math.min(365, Number(document.getElementById('goalTargetInput').value) || 60));
+      annualGoal = val;
+      saveLocalCache();
+      closeGoalModal();
+      renderAll();
+      showToast(`🎯 2026년 목표가 ${annualGoal}권으로 브라우저에 저장되었습니다.`);
+    }
+
+    function exportData() {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({
+        databaseId: notionDbId,
+        databaseTitle: notionDbTitle,
+        readOnly: true,
+        syncedAt: lastSyncedAt,
+        annualGoal,
+        books
+      }, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute('href', dataStr);
+      a.setAttribute('download', 'notion-reading-readonly-snapshot.json');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('📦 JSON 스냅샷 백업 파일이 다운로드되었습니다.');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 2800);
+    }
+
+    // 키보드 네비게이션 (아티클 리더 모달 열람 시 ←, →, ESC 지원)
+    window.addEventListener('keydown', (e) => {
+      if (!activeEssayBookId) return;
+      if (e.key === 'Escape') closeEssayModal();
+      if (e.key === 'ArrowLeft') navigateModalBook(-1);
+      if (e.key === 'ArrowRight') navigateModalBook(1);
+    });
+
+    // 초기화: 자동 Notion API 호출 없이 정적 스냅샷/캐시만 로드!
+    window.addEventListener('DOMContentLoaded', async () => {
+      loadLocalCache();
+      await loadStaticJsonSnapshot();
+      populateBookTypeFilter();
+      updateNotionBadge('idle');
+      renderAll();
+    });
+  </script>
+</body>
+</html>
