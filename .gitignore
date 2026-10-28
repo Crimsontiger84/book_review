@@ -1,0 +1,19 @@
+# Build & Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Secret environment variables (NEVER COMMIT API TOKENS)
+.env
+.env.*
+*.secret
+notion_token.txt
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
