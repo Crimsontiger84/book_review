@@ -99,36 +99,60 @@ def extract_plain_text(rich_text_list: list) -> str:
     return "".join(item.get("plain_text", "") for item in rich_text_list).strip()
 
 
-def fetch_page_body_readonly(page_id: str, token: str) -> str:
-    """Strict Read-Only: 페이지 내부의 독서록 본문 블록을 읽기 전용(GET)으로 가져옵니다."""
-    try:
-        data = notion_get(
-            f"https://api.notion.com/v1/blocks/{page_id}/children?page_size=100",
-            token,
-        )
-    except Exception:
+def fetch_page_body_readonly(page_id: str, token: str, depth: int = 0) -> str:
+    """Strict Read-Only: 페이지 내부의 독서록 본문 블록을 페이지네이션 및 하위 블록까지 읽기 전용(GET)으로 가져옵니다."""
+    if depth > 2:
         return ""
+    blocks = []
+    has_more = True
+    next_cursor = None
+    while has_more:
+        url = f"https://api.notion.com/v1/blocks/{page_id}/children?page_size=100"
+        if next_cursor:
+            url += f"&start_cursor={next_cursor}"
+        try:
+            data = notion_get(url, token)
+        except Exception:
+            break
+        blocks.extend(data.get("results", []))
+        has_more = data.get("has_more", False)
+        next_cursor = data.get("next_cursor")
 
     paragraphs = []
-    for block in data.get("results", []):
+    for block in blocks:
         btype = block.get("type", "")
         bval = block.get(btype, {})
-        if "rich_text" in bval:
+        if isinstance(bval, dict) and "rich_text" in bval:
             text = extract_plain_text(bval.get("rich_text", []))
             if btype.startswith("heading_"):
-                paragraphs.append(f"\n### {text}" if text else "")
-            elif btype == "quote":
-                paragraphs.append(f"❝ {text}" if text else "")
+                if text:
+                    paragraphs.append(f"### {text}")
+            elif btype in ("quote", "callout"):
+                if text:
+                    paragraphs.append(f"❝ {text}")
             elif btype == "bulleted_list_item":
-                paragraphs.append(f"• {text}" if text else "")
+                if text:
+                    paragraphs.append(f"• {text}")
             elif btype == "numbered_list_item":
-                paragraphs.append(f"- {text}" if text else "")
+                if text:
+                    paragraphs.append(f"- {text}")
+            elif btype == "to_do":
+                checked = "☑️" if bval.get("checked") else "⬜"
+                if text:
+                    paragraphs.append(f"{checked} {text}")
             else:
-                paragraphs.append(text)
+                if text:
+                    paragraphs.append(text)
         elif btype == "divider":
             paragraphs.append("---")
 
-    return "\n\n".join(p for p in paragraphs if p is not None).strip()
+        # 토글/콜아웃 등 하위 블록(has_children)에 작성된 본문도 누락 없이 추출
+        if block.get("has_children") and block.get("id") and btype != "child_page":
+            child_text = fetch_page_body_readonly(block["id"], token, depth + 1)
+            if child_text:
+                paragraphs.append(child_text)
+
+    return "\n\n".join(p for p in paragraphs if p).strip()
 
 
 def parse_notion_page(page: dict, existing_map: dict, token: str, fetch_body: bool = True) -> dict:
@@ -140,9 +164,11 @@ def parse_notion_page(page: dict, existing_map: dict, token: str, fetch_body: bo
     emoji = icon_obj.get("emoji") if icon_obj.get("type") == "emoji" else "📚"
 
     def get_prop_text(names):
+        # 공백 유무에 관계없이 속성명을 유연하게 매칭
+        norm_props = {k.replace(" ", ""): v for k, v in props.items()}
         for name in names:
-            if name in props:
-                p = props[name]
+            p = props.get(name) or norm_props.get(name.replace(" ", ""))
+            if p:
                 ptype = p.get("type")
                 if ptype == "title":
                     return extract_plain_text(p.get("title", []))
@@ -160,7 +186,15 @@ def parse_notion_page(page: dict, existing_map: dict, token: str, fetch_body: bo
                     return str(p.get("number"))
         return ""
 
-    title = get_prop_text(["책이름", "이름", "제목", "Title", "Name"]) or "제목 없음"
+    title = get_prop_text(["책 이름", "책이름", "이름", "제목", "Title", "Name"])
+    if not title:
+        # fallback: type == 'title'인 속성을 자동 탐색
+        for p in props.values():
+            if p.get("type") == "title":
+                title = extract_plain_text(p.get("title", []))
+                if title:
+                    break
+    title = title or "제목 없음"
     author = get_prop_text(["저자", "작가", "Author"]) or "미상"
     completed_date = get_prop_text(["완료일", "완독일", "날짜", "Date"])
     year = get_prop_text(["연도", "년도", "Year"])
@@ -176,7 +210,7 @@ def parse_notion_page(page: dict, existing_map: dict, token: str, fetch_body: bo
             month = 1
 
     summary = get_prop_text(["줄거리", "요약", "한줄평", "Summary"])
-    book_type = get_prop_text(["책유형", "분류", "장르", "카테고리", "Category", "Type"]) or "교양"
+    book_type = get_prop_text(["책 유형", "책유형", "분류", "장르", "카테고리", "Category", "Type"]) or "교양"
     external_url = get_prop_text(["URL", "링크", "브런치", "서평링크", "Link"])
 
     last_edited_str = page.get("last_edited_time", "")
@@ -190,10 +224,10 @@ def parse_notion_page(page: dict, existing_map: dict, token: str, fetch_body: bo
 
     notion_url = page.get("url") or f"https://app.notion.com/p/{page_id.replace('-', '')}"
 
-    # 변경되지 않은 페이지는 기존 캐시 본문을 재사용하여 속도 최적화
+    # 변경되지 않은 페이지이고 이미 본문(bodyContent)이 채워져 있는 경우에만 캐시 재사용
     prev = existing_map.get(page_id)
     body_content = ""
-    if prev and prev.get("updatedAt") == updated_at and "bodyContent" in prev:
+    if prev and prev.get("updatedAt") == updated_at and prev.get("bodyContent"):
         body_content = prev.get("bodyContent", "")
     elif fetch_body and token:
         body_content = fetch_page_body_readonly(page_id, token)
@@ -242,7 +276,14 @@ def sync_from_notion_readonly() -> dict:
     db_title = extract_plain_text(db_meta.get("title", [])) or "독서 후 글쓰기"
 
     pages = notion_query_database(database_id, token)
-    books = [parse_notion_page(p, existing_map, token, fetch_body=True) for p in pages]
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        raw_books = list(executor.map(lambda p: parse_notion_page(p, existing_map, token, fetch_body=True), pages))
+    # 빈 행(제목 없음 & 저자 미상 & 완료일 없음) 제외
+    books = [
+        b for b in raw_books
+        if not (b.get("title") in ("", "제목 없음") and b.get("author") in ("", "미상") and not b.get("completedDate"))
+    ]
     books.sort(key=lambda x: (x.get("completedDate") or "", x.get("updatedAt") or 0), reverse=True)
 
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -257,6 +298,24 @@ def sync_from_notion_readonly() -> dict:
 
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     DATA_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # index.html 내부의 INITIAL_NOTION_BOOKS 스냅샷도 함께 최신화하여 정적 배포 시에도 항상 일치하도록 유지
+    index_path = ROOT_DIR / "index.html"
+    if index_path.exists():
+        try:
+            import re
+            html_text = index_path.read_text(encoding="utf-8")
+            books_json_inline = json.dumps(books, ensure_ascii=False)
+            html_text = re.sub(
+                r"const INITIAL_NOTION_BOOKS = \[.*?\];",
+                lambda _: f"const INITIAL_NOTION_BOOKS = {books_json_inline};",
+                html_text,
+                count=1,
+            )
+            index_path.write_text(html_text, encoding="utf-8")
+        except Exception:
+            pass
+
     return payload
 
 
