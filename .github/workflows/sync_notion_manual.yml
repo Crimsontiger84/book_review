@@ -1,0 +1,44 @@
+name: Manual Notion Read-Only Sync (Notion to GitHub Pages)
+
+on:
+  # 자동 스케줄(cron) 없이 오직 사용자가 버튼을 직접 눌렀을 때만 실행 (수동 동기화 & 비용 0원 원칙)
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '수동 동기화 메모 (선택)'
+        required: false
+        default: 'Manual sync from Notion DB'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-notion-readonly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🔄 Fetch latest books from Notion (Strict Read-Only)
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: c24fd2e2-f56e-4969-aa1d-fc2039fbe008
+        run: |
+          python sync_readonly.py --once
+
+      - name: 💾 Commit updated data/notion_books.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/notion_books.json
+          if git diff --staged --quiet; then
+            echo "변경된 독서 데이터가 없습니다."
+          else
+            git commit -m "chore(data): manual read-only sync from Notion [독서 후 글쓰기]"
+            git push
+          fi
