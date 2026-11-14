@@ -224,10 +224,10 @@ def parse_notion_page(page: dict, existing_map: dict, token: str, fetch_body: bo
 
     notion_url = page.get("url") or f"https://app.notion.com/p/{page_id.replace('-', '')}"
 
-    # 변경되지 않은 페이지이고 이미 본문(bodyContent)이 채워져 있는 경우에만 캐시 재사용
+    # 변경되지 않은 페이지(updatedAt 동일)이고 기존 데이터에 이미 스냅샷이 있는 경우 API 재호출 생략 (신규 추가/수정된 페이지만 본문 조회)
     prev = existing_map.get(page_id)
     body_content = ""
-    if prev and prev.get("updatedAt") == updated_at and prev.get("bodyContent"):
+    if prev and prev.get("updatedAt") == updated_at:
         body_content = prev.get("bodyContent", "")
     elif fetch_body and token:
         body_content = fetch_page_body_readonly(page_id, token)
