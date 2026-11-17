@@ -73,27 +73,19 @@
             <h1 class="text-lg font-extrabold tracking-tight text-slate-900" id="headerTitle">독서 후 글쓰기</h1>
             <span
               id="notionStatusBadge"
-              class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1.5"
-              title="Notion 원본 DB 보호를 위해 단방향 읽기 전용 수동 동기화로만 동작합니다"
+              class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5"
+              title="매일 오전 7시(KST) 노션 최신 데이터가 자동으로 일배치 동기화됩니다 (읽기 전용)"
             >
               <span id="notionBadgeDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span id="notionBadgeText">수동 동기화 모드 (읽기 전용 · 마지막 동기화: 2026-11-07 22:32)</span>
+              <span id="notionBadgeText">일배치 자동 동기화 (매일 07:00 · 마지막 동기화: 2026-11-07 22:32)</span>
             </span>
           </div>
-          <p class="text-xs text-slate-500">북리뷰 & 독서 에세이 아카이브 • Notion [독서 후 글쓰기] 단방향(Notion ➔ Web) 읽기 전용 채널</p>
+          <p class="text-xs text-slate-500">북리뷰 & 독서 에세이 아카이브 • Notion [독서 후 글쓰기] 매일 아침 7시 자동 동기화 채널 (읽기 전용)</p>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="syncFromNotion(true)" id="syncBtn" class="px-3.5 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition flex items-center gap-1.5" title="클릭 시에만 Notion 최신 데이터를 읽기 전용으로 불러옵니다">
-          <span>🔄</span>
-          <span>Notion 동기화</span>
-        </button>
-        <button onclick="openTokenModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center gap-1.5" title="GitHub 웹에서 [Notion 동기화] 클릭 시 자동으로 노션 DB를 동기화하도록 설정">
-          <span>⚙️</span>
-          <span>웹 동기화 설정</span>
-        </button>
-        <button onclick="openGoalModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center gap-1.5" title="목표 권수는 이 브라우저(localStorage)에만 저장됩니다">
+        <button onclick="openGoalModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center gap-1.5" title="목표 권수는 이 브라우저(localStorage)에만 저장됩니다">
           <span>🎯</span>
           <span>목표 수정</span>
         </button>
@@ -350,10 +342,8 @@
 
   <!-- Footer -->
   <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 border-t border-slate-200/80 mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-    <div id="footerSyncStatus">ReadLog • Notion [독서 후 글쓰기] 단방향 수동 동기화 모드 (Strict Read-Only)</div>
+    <div id="footerSyncStatus">ReadLog • Notion [독서 후 글쓰기] 매일 07:00 일배치 자동 동기화 (Strict Read-Only)</div>
     <div class="flex flex-wrap items-center gap-4">
-      <button onclick="syncFromNotion(true)" class="hover:text-indigo-600 underline font-semibold">🔄 지금 Notion 수동 동기화</button>
-      <button onclick="openTokenModal()" class="hover:text-indigo-600 underline">🔑 웹 수동 동기화 키 설정</button>
       <button onclick="exportData()" class="hover:text-slate-600 underline">JSON 스냅샷 백업 내보내기</button>
     </div>
   </footer>
@@ -603,18 +593,24 @@
     }
 
     async function loadStaticJsonSnapshot() {
-      try {
-        const res = await fetch(`./data/notion_books.json?t=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) return false;
-        const data = await res.json();
-        if (Array.isArray(data.books) && data.books.length > 0) {
-          books = mergeBooksList(books, data.books);
-          if (data.databaseTitle) notionDbTitle = data.databaseTitle;
-          if (data.syncedAt && data.syncedAt > lastSyncedAt) lastSyncedAt = data.syncedAt;
-          saveLocalCache();
-          return true;
-        }
-      } catch (e) {}
+      const urls = [
+        `./data/notion_books.json?t=${Date.now()}`,
+        `https://raw.githubusercontent.com/${GITHUB_REPO}/main/data/notion_books.json?t=${Date.now()}`
+      ];
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (!res.ok) continue;
+          const data = await res.json();
+          if (Array.isArray(data.books) && data.books.length > 0) {
+            books = mergeBooksList(books, data.books);
+            if (data.databaseTitle) notionDbTitle = data.databaseTitle;
+            if (data.syncedAt && data.syncedAt > lastSyncedAt) lastSyncedAt = data.syncedAt;
+            saveLocalCache();
+            return true;
+          }
+        } catch (e) {}
+      }
       return false;
     }
 
@@ -740,10 +736,10 @@
       } else {
         badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5';
         dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        text.textContent = customText || `수동 동기화 모드 (읽기 전용 · 마지막 동기화: ${lastSyncedAt})`;
+        text.textContent = customText || `일배치 자동 동기화 (매일 07:00 · 마지막 동기화: ${lastSyncedAt})`;
       }
       document.getElementById('footerSyncStatus').textContent =
-        `🔒 Notion [${notionDbTitle}] 단방향 수동 동기화 모드 (읽기 전용) • 총 ${books.length}권 • 마지막 동기화: ${lastSyncedAt}`;
+        `🔒 Notion [${notionDbTitle}] 매일 오전 7시 일배치 자동 동기화 (읽기 전용) • 총 ${books.length}권 • 마지막 동기화: ${lastSyncedAt}`;
     }
 
     // 오직 사용자가 [🔄 Notion 동기화] 버튼을 직접 클릭했을 때만 호출됨
