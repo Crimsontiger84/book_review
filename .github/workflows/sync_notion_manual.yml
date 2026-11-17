@@ -1,16 +1,21 @@
-name: Manual Notion Read-Only Sync (Notion to GitHub Pages)
+name: Daily Notion Read-Only Sync (Every Day 07:00 KST)
 
 on:
-  # 자동 스케줄(cron) 없이 오직 사용자가 버튼을 직접 눌렀을 때만 실행 (수동 동기화 & 비용 0원 원칙)
+  # 매일 아침 7시(한국 시간 KST = UTC 22:00) 자동 일배치 동기화 실행
+  schedule:
+    - cron: '0 22 * * *'
+  # 필요 시 언제든 즉시 실행할 수 있는 수동 트리거도 함께 유지
   workflow_dispatch:
     inputs:
       reason:
-        description: '수동 동기화 메모 (선택)'
+        description: '즉시 동기화 메모 (선택)'
         required: false
-        default: 'Manual sync from Notion DB'
+        default: 'Immediate sync from Notion DB'
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   sync-notion-readonly:
@@ -31,14 +36,27 @@ jobs:
         run: |
           python sync_readonly.py --once
 
-      - name: 💾 Commit updated data/notion_books.json
+      - name: 💾 Commit and Push updated data & index.html
+        id: commit_step
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/notion_books.json
+          git add data/notion_books.json index.html
           if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
             echo "변경된 독서 데이터가 없습니다."
           else
-            git commit -m "chore(data): manual read-only sync from Notion [독서 후 글쓰기]"
+            git commit -m "chore(data): daily auto read-only sync from Notion [독서 후 글쓰기]"
             git push
+            echo "changed=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: 🚀 Trigger GitHub Pages Rebuild
+        if: steps.commit_step.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_PAT || github.token }}
+        run: |
+          curl -s -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/pages/builds || true
