@@ -286,7 +286,8 @@ def sync_from_notion_readonly() -> dict:
     ]
     books.sort(key=lambda x: (x.get("completedDate") or "", x.get("updatedAt") or 0), reverse=True)
 
-    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    kst_tz = datetime.timezone(datetime.timedelta(hours=9))
+    now_str = datetime.datetime.now(kst_tz).strftime("%Y-%m-%d %H:%M")
     payload = {
         "connected": True,
         "readOnly": True,
@@ -299,7 +300,7 @@ def sync_from_notion_readonly() -> dict:
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     DATA_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    # index.html 내부의 INITIAL_NOTION_BOOKS 스냅샷도 함께 최신화하여 정적 배포 시에도 항상 일치하도록 유지
+    # index.html 내부의 INITIAL_NOTION_BOOKS 스냅샷 및 동기화 시각도 함께 최신화
     index_path = ROOT_DIR / "index.html"
     if index_path.exists():
         try:
@@ -311,6 +312,17 @@ def sync_from_notion_readonly() -> dict:
                 lambda _: f"const INITIAL_NOTION_BOOKS = {books_json_inline};",
                 html_text,
                 count=1,
+            )
+            html_text = re.sub(
+                r"let lastSyncedAt = '[^']*';",
+                f"let lastSyncedAt = '{now_str}';",
+                html_text,
+                count=1,
+            )
+            html_text = re.sub(
+                r"마지막 동기화: [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}",
+                f"마지막 동기화: {now_str}",
+                html_text,
             )
             index_path.write_text(html_text, encoding="utf-8")
         except Exception:
