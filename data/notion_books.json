@@ -3,8 +3,24 @@
   "readOnly": true,
   "databaseId": "c24fd2e2-f56e-4969-aa1d-fc2039fbe008",
   "databaseTitle": "독서 후 글쓰기",
-  "syncedAt": "2026-11-21 11:56",
+  "syncedAt": "2026-11-22 10:51",
   "books": [
+    {
+      "id": "4205d750-ba6c-8012-beea-cb03890034fe",
+      "notionUrl": "https://app.notion.com/p/4205d750ba6c8012beeacb03890034fe",
+      "emoji": "📚",
+      "title": "돈의 방정식",
+      "author": "모건 하우절",
+      "bookType": "교양",
+      "summary": "",
+      "completedDate": "2026-11-23",
+      "year": "2026",
+      "month": 11,
+      "status": "completed",
+      "externalUrl": "",
+      "updatedAt": 1795308600000,
+      "bodyContent": ""
+    },
     {
       "id": "41a5d750-ba6c-801f-8bdb-ed3a4bff66cd",
       "notionUrl": "https://app.notion.com/p/41a5d750ba6c801f8bdbed3a4bff66cd",
